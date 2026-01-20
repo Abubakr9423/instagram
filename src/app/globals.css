@@ -2,7 +2,15 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+/* Скрываем горизонтальный скроллбар везде, где есть класс scrollbar-hide */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Скрывает скроллбар в IE и Edge */
+  scrollbar-width: none;     /* Скрывает в Firefox */
+}
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Скрывает в Chrome, Safari, Opera */
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
