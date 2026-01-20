@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex items-start justify-start ">
             <Sidebar />
-            <div className="p-2 flex-1 text-gray-900 dark:text-gray-100">
+            <div className=" flex-1 text-gray-900 dark:text-gray-100">
               <ReduxProvider>{children}</ReduxProvider>
             </div>
           </div>
