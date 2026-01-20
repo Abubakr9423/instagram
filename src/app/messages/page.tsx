@@ -1,0 +1,90 @@
+import { AudioLines, ImageDown, Info, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+import Image from 'next/image'
+import img from '../favicon.ico'
+
+function page() {
+    return (
+        <div>
+            <section className='flex h-screen'>
+                <aside className='px-4 border w-[30%]'>
+                    <div className='flex flex-col gap-2'>
+                        <div className='flex justify-between pt-5'>
+                            <h1 className='font-bold text-[20px] cursor-pointer'>_nazarov._011</h1>
+                            <SquarePen className='text-black cursor-pointer' />
+                        </div>
+                        <div className='flex items-center '>
+                            <Search className='absolute left-7' />
+                            <input className='bg-gray-100 py-2 w-full pl-12 pr-3 rounded-2xl' placeholder='Search' type="search" />
+                        </div>
+                        <div className="relative flex flex-col items-center w-24 mt-5 mb-2">
+                            <textarea
+                                className="absolute -top-2 z-10 w-24 h-10 placeholder:text-gray-500 overflow-y-auto text-center font-semibold text-[10px] border border-gray-200 rounded-lg bg-white shadow-md focus:outline-none resize-none p-1"
+                                placeholder='New thought incoming'
+                            />
+
+                            <div className="w-20 h-20 rounded-full border border-gray-200 overflow-hidden bg-gray-100 shadow-lg">
+                                <Image
+                                    className="w-full h-full object-cover"
+                                    src={img}
+                                    alt="Player"
+                                />
+                            </div>
+                        </div>
+                        <div className='flex justify-between pt-5'>
+                            <h1 className='font-bold text-[16px]'>Messages</h1>
+                            <p className='text-gray-500 '>Requests</p>
+                        </div>
+                        <div className='overflow-y-auto flex flex-col h-112.5 pr-2'>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
+                                <div key={item} className='flex gap-2 items-center hover:bg-gray-100 py-2 px-1 rounded-sm duration-300 cursor-pointer'>
+                                    <Image className='w-11 h-11 rounded-full' src={img} alt="user" />
+                                    <div className='text-sm'>
+                                        <h1 className='font-bold'>_nazarov._011</h1>
+                                        <p className='text-gray-500'>You: Salom Maleykum</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </aside>
+                <aside className=' border w-[70%] flex flex-col justify-between'>
+                    <div className='flex px-3 gap-2 items-center border-b justify-between hover:bg-gray-50 py-2 rounded-sm duration-300'>
+                        <div className='flex gap-2 items-center'>
+                            <Image className='w-11 h-11' src={img} alt="" />
+                            <div>
+                                <h1 className='font-bold'>MUHAMMAD</h1>
+                                <p>solievvvv77</p>
+                            </div>
+                        </div>
+                        <div className='flex gap-4 items-center '>
+                            <Phone className=' cursor-pointer' size={25} />
+                            <Video className=' cursor-pointer' size={30} />
+                            <Info className=' cursor-pointer' size={30} />
+                        </div>
+                    </div>
+                    <div className='flex items-center gap-2 px-3 py-2 border-t bg-white'>
+                        <div className='relative flex items-center w-full border rounded-full px-4 py-1 focus-within:border-gray-400'>
+
+                            <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} />
+
+                            <input
+                                className='w-full bg-transparent py-2 px-3 outline-none text-sm'
+                                type="text"
+                                placeholder="Message..."
+                            />
+
+                            <div className='flex items-center gap-3 text-gray-600'>
+                                <AudioLines className='cursor-pointer hover:text-black' size={20} />
+                                <ImageDown className='cursor-pointer hover:text-black' size={20} />
+                                <Send className='cursor-pointer text-blue-500 font-bold hover:text-blue-700' size={20} />
+                            </div>
+
+                        </div>
+                    </div>
+                </aside>
+            </section>
+        </div>
+    )
+}
+
+export default page
