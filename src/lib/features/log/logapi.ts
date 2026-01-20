@@ -9,13 +9,20 @@ export const loginUser = createAsyncThunk(
 
             const token = response.data?.data;
             if (token) {
-                SaveToken(token); 
+                SaveToken(token);
             }
 
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            return rejectWithValue(error);
+
+            const message =
+                error.response?.data?.message ||
+                error.response?.data ||
+                error.message ||
+                "Login failed";
+
+            return rejectWithValue(message);
         }
     }
 );
@@ -24,7 +31,7 @@ export const registerUser = createAsyncThunk(
     "auth/registerUser",
     async (values, { rejectWithValue }) => {
         try {
-            const response = await axiosRequest.post("/api/auth/register", values);
+            const response = await axiosRequest.post("/Account/register", values);
 
             const token = response.data?.data;
             if (token) {
@@ -32,9 +39,16 @@ export const registerUser = createAsyncThunk(
             }
 
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            return rejectWithValue(error);
+
+            const message =
+                error.response?.data?.message ||
+                error.response?.data ||
+                error.message ||
+                "Registration failed";
+
+            return rejectWithValue(message);
         }
     }
 );
