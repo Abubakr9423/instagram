@@ -1,10 +1,13 @@
-export const getReels = createAsyncThunk<Reel[], string, { rejectValue: string }>(
+import { axiosRequest } from "@/src/utils/axios";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+
+export const getReels = createAsyncThunk<string, { rejectValue: string }>(
   "reels/getReels",
-  async ({ rejectWithValue }) => {
+  async () => {
     try {
-      const {data} = await axios
+      const {data} = await axiosRequest.get("/Post/get-reels")
+      return data;
     } catch (error) {
       console.error(error);
-      return rejectWithValue("Failed to fetch reels");
     }
-  }
+  })

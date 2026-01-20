@@ -1,24 +1,23 @@
-'use client'
+"use client";
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { FaHeart, FaRegCommentDots, FaShare, FaBookmark } from "react-icons/fa";
-import { AppDispatch, RootState } from "@/src/lib/store"; // путь к store
-import { getReels } from "@/src/lib/features/reels/reelsapi"; // путь к thunk
+import { AppDispatch, RootState } from "@/src/lib/store";
+import { getReels } from "@/src/lib/features/reels/reelsapi";
 
 export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
-  const { reels, loading, error } = useSelector((state: RootState) => state.reels);
+  const { reels, loading, error } = useSelector(
+    (state: RootState) => state.reels,
+  );
+
+  console.log(reels);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      dispatch(getReels(token));
-    } else {
-      console.warn("Token not found in localStorage!");
-    }
+    dispatch(getReels());
   }, [dispatch]);
 
   if (loading) return <div className="text-white">Loading...</div>;
@@ -31,7 +30,13 @@ export default function Page() {
           {reels.map((item) => (
             <SwiperSlide key={item.id}>
               <div className="relative w-full h-full bg-black">
-                <video src={item.videoUrl} autoPlay muted loop className="w-full h-full object-cover" />
+                <video
+                  src={item.videoUrl}
+                  autoPlay
+                  muted
+                  loop
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute right-3 bottom-24 flex flex-col gap-6 text-white">
                   <FaHeart size={26} />
                   <FaRegCommentDots size={26} />
