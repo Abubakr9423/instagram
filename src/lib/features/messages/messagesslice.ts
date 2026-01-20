@@ -32,5 +32,5 @@ export const createApiMessages = createSlice({
     }
 })
 
-export const { GetUsersMessages } = createApiMessages.actions
+export const { } = createApiMessages.actions
 export default createApiMessages.reducer

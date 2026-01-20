@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from './../../lib/store'
 import { Getchats } from '../../lib/features/messages/ApiMessages'
-import {  ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+import { ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from '../favicon.ico'
 import Link from 'next/link'
@@ -62,7 +62,7 @@ function page() {
                             ))}
                         </div> */}
                         <div className='overflow-y-auto flex flex-col h-112.5 pr-2'>
-                            {loading && <p>Loading...</p>}
+                            {loading && <div className="h-screen flex justify-center items-center"><div className="w-12 h-12 border-4 border-transparent  border-t-gray-700 rounded-full animate-spin" /></div>}
                             {error && <p className="text-red-500">{error}</p>}
 
                             {data && data.length > 0 ? (
@@ -70,7 +70,7 @@ function page() {
                                     <div key={chat.id} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
                                         <Image
                                             className='w-11 h-11 rounded-full'
-                                            src={chat.userImage || img} 
+                                            src={chat.userImage || img}
                                             alt="user"
                                             width={44}
                                             height={44}
@@ -82,7 +82,7 @@ function page() {
                                     </div>
                                 ))
                             ) : (
-                                !loading && <p>Чатҳо ёфт нашуданд</p>
+                                !loading && <div className='flex justify-center items-center h-screen'><p>Chats not found</p></div>
                             )}
                         </div>
                     </div>
