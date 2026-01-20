@@ -1,9 +1,24 @@
-import { AudioLines, ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+"use client" // Ҳатман илова кунед
+
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { AppDispatch, RootState } from './../../lib/store'
+import { Getchats } from '../../lib/features/messages/ApiMessages'
+import {  ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from '../favicon.ico'
 import Link from 'next/link'
 
 function page() {
+    const dispatch = useDispatch<AppDispatch>()
+
+    // Гирифтани маълумот аз Redux state
+    const { data, loading, error } = useSelector((state: RootState) => state.messagesApi)
+
+    useEffect(() => {
+        dispatch(Getchats())
+    }, [dispatch])
+
     return (
         <div>
             <section className='flex h-screen'>
@@ -35,7 +50,7 @@ function page() {
                             <h1 className='font-bold text-[16px]'>Messages</h1>
                             <p className='text-gray-500 '>Requests</p>
                         </div>
-                        <div className='overflow-y-auto flex flex-col h-112.5 pr-2'>
+                        {/* <div className='overflow-y-auto flex flex-col h-112.5 pr-2'>
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
                                 <div key={item} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
                                     <Image className='w-11 h-11 rounded-full' src={img} alt="user" />
@@ -45,6 +60,30 @@ function page() {
                                     </div>
                                 </div>
                             ))}
+                        </div> */}
+                        <div className='overflow-y-auto flex flex-col h-112.5 pr-2'>
+                            {loading && <p>Loading...</p>}
+                            {error && <p className="text-red-500">{error}</p>}
+
+                            {data && data.length > 0 ? (
+                                data.map((chat: any) => (
+                                    <div key={chat.id} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
+                                        <Image
+                                            className='w-11 h-11 rounded-full'
+                                            src={chat.userImage || img} 
+                                            alt="user"
+                                            width={44}
+                                            height={44}
+                                        />
+                                        <div className='text-sm'>
+                                            <h1 className='font-bold'>{chat.userName || "Username"}</h1>
+                                            <p className='text-gray-500'>{chat.lastMessage || "No messages yet"}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                !loading && <p>Чатҳо ёфт нашуданд</p>
+                            )}
                         </div>
                     </div>
                 </aside>
