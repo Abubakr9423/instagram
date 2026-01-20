@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import home from "./features/home/homeslice"
+import messagesReducer from './features/messages/messagesslice'
 
 export const store = configureStore({
     reducer: {
-        counter: home
+        counter: home,
+        messagesApi: messagesReducer,
     }
 })
 
