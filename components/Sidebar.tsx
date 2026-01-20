@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Heart, Home, MessageCircleMoreIcon, PlusSquareIcon, Search, User } from "lucide-react";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { instagramFont } from "@/src/app/font";
+import { TextAnimate } from "./ui/text-animate";
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -17,8 +18,8 @@ export function Sidebar() {
             <div className="flex flex-col justify-between h-screen w-64 border-r border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-black">
                 <div className="flex items-center mb-8 gap-5">
                     <p
-                    className={`
-                    ${instagramFont.className}
+                        className={`
+                                ${instagramFont.className}
                     text-[52px]
                     text-[#262626]
                     dark:text-white
@@ -29,7 +30,7 @@ export function Sidebar() {
                     scale-x-[1.03]
                   `}
                     >
-                   Instagram
+                        Instagram
                     </p>
                     <AnimatedThemeToggler />
                 </div>
