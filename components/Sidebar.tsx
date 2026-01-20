@@ -12,6 +12,7 @@ export function Sidebar() {
     const pathname = usePathname();
 
     if (pathname === "/") return null;
+    if (pathname === "/register") return null;
 
     return (
         <div className="flex flex-col justify-between h-screen w-64 border-r border-gray-200 dark:border-gray-700 py-2 bg-white dark:bg-black">
