@@ -83,7 +83,7 @@ export default function Stories() {
           <div className="flex items-center gap-[20px]">
             <Image src={img3} alt='' />
             <div>
-              <p className='font-[700]'>terrylucas</p>
+              <p className='font-[700]'>terrylucass</p>
               <p className='text-[#475569]'>Profile</p>
             </div>
           </div>
