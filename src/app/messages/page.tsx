@@ -1,4 +1,4 @@
-import { AudioLines, ImageDown, Info, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+import { AudioLines, ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from '../favicon.ico'
 
@@ -12,8 +12,8 @@ function page() {
                             <h1 className='font-bold text-[20px] cursor-pointer'>_nazarov._011</h1>
                             <SquarePen className='text-black cursor-pointer' />
                         </div>
-                        <div className='flex items-center '>
-                            <Search className='absolute left-7' />
+                        <div className='flex items-center relative'>
+                            <Search className='absolute left-3 text-gray-500' />
                             <input className='bg-gray-100 py-2 w-full pl-12 pr-3 rounded-2xl' placeholder='Search' type="search" />
                         </div>
                         <div className="relative flex flex-col items-center w-24 mt-5 mb-2">
@@ -74,11 +74,10 @@ function page() {
                             />
 
                             <div className='flex items-center gap-3 text-gray-600'>
-                                <AudioLines className='cursor-pointer hover:text-black' size={20} />
+                                <Mic className='cursor-pointer hover:text-black' size={20} />
                                 <ImageDown className='cursor-pointer hover:text-black' size={20} />
                                 <Send className='cursor-pointer text-blue-500 font-bold hover:text-blue-700' size={20} />
                             </div>
-
                         </div>
                     </div>
                 </aside>

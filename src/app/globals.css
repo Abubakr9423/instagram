@@ -130,4 +130,10 @@
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: #dbdbdb;
   border-radius: 10px;
+
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }
