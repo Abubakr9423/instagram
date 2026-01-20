@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReduxProvider } from "../lib/provider";
 import { Sidebar } from "@/components/Sidebar";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Sidebar />
             <div className=" flex-1 text-gray-900 dark:text-gray-100">
               <ReduxProvider>{children}</ReduxProvider>
+              <Toaster position="top-center" reverseOrder={false} />
             </div>
           </div>
         </ThemeProvider>

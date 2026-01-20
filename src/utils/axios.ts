@@ -9,7 +9,7 @@ export const GetToken = () => {
 };
 
 export const axiosRequest = axios.create({
-    baseURL: "https://instagram-api.softclub.tj"
+    baseURL: "https://instagram-api.softclub.tj/"
 });
 
 axiosRequest.interceptors.request.use(
