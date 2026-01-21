@@ -25,15 +25,14 @@ import { FiShare2 } from "react-icons/fi";
 import Link from "next/link";
 import { Modal, message, Spin, Upload, Button, Input } from "antd";
 import { UploadOutlined, LoadingOutlined } from "@ant-design/icons";
-import { redirect } from "next/navigation";
 
 type Comment = {
-  postCommentId: number;
+  commentId: number;
   userId: string;
-  userName: string | null; // ✅ Can be null
-  userImage: string | null; // ✅ Can be null
-  comment: string; // ✅ Fixed
-  dateCommented: string; // ✅ Fixed
+  userName: string;
+  userImage: string;
+  content: string;
+  createdAt: string;
 };
 
 type Post = {
@@ -79,21 +78,28 @@ const Profile = () => {
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
   const imageObserver = useRef<IntersectionObserver | null>(null);
   const observedImages = useRef<Set<Element>>(new Set());
+
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token found");
     return {
       Authorization: `Bearer ${token}`,
+      accept: "*/*",
     };
   };
+
   useEffect(() => {
     fetchData();
     fetchPosts();
   }, []);
+
   useEffect(() => {
     if (activeTab === "saved" && savedPosts.length === 0) fetchSavedPosts();
   }, [activeTab]);
+
   useEffect(() => {
     imageObserver.current = new IntersectionObserver(
       (entries) => {
@@ -111,19 +117,23 @@ const Profile = () => {
     );
     return () => imageObserver.current?.disconnect();
   }, []);
+
   const getImageUrl = (imagePath: string) => {
     if (!imagePath || imagePath === "null" || imagePath === "undefined")
       return "https://via.placeholder.com/400?text=Post+Image";
     return `https://instagram-api.softclub.tj/images/${imagePath}`;
   };
+
   const getAvatarUrl = (imagePath: string) => {
     if (!imagePath || imagePath === "null" || imagePath === "undefined")
       return "https://via.placeholder.com/150?text=Avatar";
     return `https://instagram-api.softclub.tj/images/${imagePath}`;
   };
+
   const showMessage = (type: "success" | "error" | "info", content: string) => {
     message[type](content);
   };
+
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -137,6 +147,7 @@ const Profile = () => {
       return dateString;
     }
   };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -155,10 +166,12 @@ const Profile = () => {
     } catch (err: any) {
       console.error(err);
       setError("Failed to load profile");
+      showMessage("error", "Не удалось загрузить профиль");
     } finally {
       setLoading(false);
     }
   };
+
   const fetchPosts = async () => {
     try {
       setLoadingPosts(true);
@@ -171,20 +184,13 @@ const Profile = () => {
       setPosts(Array.isArray(result) ? result : result?.data || []);
     } catch (err) {
       console.error(err);
-      if (!localStorage.getItem("token")) {
-        setError("Пожалуйста, войдите в систему, чтобы просмотреть профиль.");
-        showMessage(
-          "error",
-          "Пожалуйста, войдите в систему, чтобы просмотреть профиль.",
-        );
-        redirect("/");
-      }
       showMessage("error", "Не удалось загрузить посты");
       setPosts([]);
     } finally {
       setLoadingPosts(false);
     }
   };
+
   const fetchSavedPosts = async () => {
     try {
       setLoadingSaved(true);
@@ -205,6 +211,7 @@ const Profile = () => {
       setLoadingSaved(false);
     }
   };
+
   const fetchFullPostData = async (postId: number) => {
     try {
       setLoadingFullPost(true);
@@ -214,11 +221,6 @@ const Profile = () => {
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
-
-      // 🔍 ADD THIS TO SEE WHAT YOU'RE GETTING
-      console.log("Full post data:", result);
-      console.log("Comments:", result?.data?.comments || result?.comments);
-
       setFullPostData(result?.data || result || null);
     } catch (err) {
       console.error(err);
@@ -227,11 +229,13 @@ const Profile = () => {
       setLoadingFullPost(false);
     }
   };
+
   const handleAddPost = async () => {
     if (!title.trim() || !content.trim())
       return showMessage("error", "Заполните заголовок и описание");
     if (!images || images.length === 0)
       return showMessage("error", "Выберите хотя бы одно фото/видео");
+
     setUploading(true);
     try {
       const token = localStorage.getItem("token");
@@ -240,6 +244,7 @@ const Profile = () => {
       formData.append("title", title);
       formData.append("content", content);
       Array.from(images).forEach((image) => formData.append("images", image));
+
       const res = await fetch(
         "https://instagram-api.softclub.tj/Post/add-post",
         {
@@ -248,6 +253,7 @@ const Profile = () => {
           body: formData,
         },
       );
+
       if (!res.ok) throw new Error("Failed to add post");
       showMessage("success", "Пост добавлен");
       setModalAdd(false);
@@ -261,6 +267,7 @@ const Profile = () => {
       setUploading(false);
     }
   };
+
   const handleDeletePost = async (postId: number) => {
     Modal.confirm({
       title: "Удалить пост",
@@ -297,6 +304,7 @@ const Profile = () => {
       },
     });
   };
+
   const handleLikePost = async (postId: number) => {
     try {
       const res = await fetch(
@@ -312,6 +320,7 @@ const Profile = () => {
       showMessage("error", "Не удалось поставить лайк");
     }
   };
+
   const handleAddToFavorites = async (postId: number) => {
     try {
       const res = await fetch(
@@ -329,7 +338,9 @@ const Profile = () => {
       showMessage("error", "Не удалось добавить в избранное");
     }
   };
+
   const handleAddComment = async (postId: number) => {
+    if (!newComment.trim()) return;
     setSubmittingComment(true);
     try {
       const res = await fetch(
@@ -337,11 +348,39 @@ const Profile = () => {
         {
           method: "POST",
           headers: { ...getAuthHeader(), "Content-Type": "application/json" },
-          body: JSON.stringify({ comment: newComment, postId: postId }),
+          body: JSON.stringify({ comment: newComment, postId }),
         },
       );
       if (!res.ok) throw new Error("Failed to add comment");
+
+      // Fetch updated post data
       await fetchFullPostData(postId);
+
+      // ALSO update the selectedPost state immediately for better UX
+      if (selectedPost?.postId === postId) {
+        const updatedComments = [
+          ...(selectedPost.comments || []),
+          {
+            commentId: Date.now(), // Temporary ID
+            userId: data?.userId || "",
+            userName: data?.userName || "You",
+            userImage: data?.image || "",
+            content: newComment,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+
+        setSelectedPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: updatedComments,
+                commentCount: (prev.commentCount || 0) + 1,
+              }
+            : null,
+        );
+      }
+
       setNewComment("");
       showMessage("success", "Комментарий добавлен");
     } catch (err: any) {
@@ -350,6 +389,7 @@ const Profile = () => {
       setSubmittingComment(false);
     }
   };
+
   const handleDeleteComment = async (commentId: number) => {
     try {
       const res = await fetch(
@@ -360,12 +400,43 @@ const Profile = () => {
         },
       );
       if (!res.ok) throw new Error("Failed to delete comment");
-      if (fullPostData?.postId) await fetchFullPostData(fullPostData.postId);
+
+      // Update selectedPost state immediately
+      if (selectedPost?.comments) {
+        setSelectedPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: prev.comments.filter(
+                  (c) => c.commentId !== commentId,
+                ),
+                commentCount: Math.max((prev.commentCount || 1) - 1, 0),
+              }
+            : null,
+        );
+      }
+
+      // Also update fullPostData if it exists
+      if (fullPostData?.comments) {
+        setFullPostData((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: prev.comments.filter(
+                  (c) => c.commentId !== commentId,
+                ),
+                commentCount: Math.max((prev.commentCount || 1) - 1, 0),
+              }
+            : null,
+        );
+      }
+
       showMessage("success", "Комментарий удалён");
     } catch (err: any) {
       showMessage("error", "Не удалось удалить комментарий");
     }
   };
+
   const handleViewPost = async (postId: number) => {
     try {
       await fetch(
@@ -379,6 +450,7 @@ const Profile = () => {
       console.error("View error:", err);
     }
   };
+
   const handleBioSave = async () => {
     try {
       const res = await fetch(
@@ -397,6 +469,7 @@ const Profile = () => {
       showMessage("error", err.message || "Ошибка обновления профиля");
     }
   };
+
   const handleAvatarUpload = async (file: File) => {
     setUploadingAvatar(true);
     try {
@@ -421,6 +494,7 @@ const Profile = () => {
       setUploadingAvatar(false);
     }
   };
+
   const handleAvatarDelete = async () => {
     Modal.confirm({
       title: "Удалить аватар",
@@ -446,6 +520,7 @@ const Profile = () => {
       },
     });
   };
+
   const openPostModal = async (post: Post) => {
     setSelectedPost(post);
     setCurrentImageIndex(0);
@@ -453,6 +528,7 @@ const Profile = () => {
     await handleViewPost(post.postId);
     await fetchFullPostData(post.postId);
   };
+
   const closePostModal = () => {
     setIsPostModalOpen(false);
     setSelectedPost(null);
@@ -460,22 +536,25 @@ const Profile = () => {
     setNewComment("");
     setCurrentImageIndex(0);
   };
+
   const nextImage = () => {
     const post = fullPostData || selectedPost;
     if (post?.images?.length) {
       setCurrentImageIndex((prev) =>
-        prev == post.images.length - 1 ? 0 : prev + 1,
+        prev === post.images.length - 1 ? 0 : prev + 1,
       );
     }
   };
+
   const prevImage = () => {
     const post = fullPostData || selectedPost;
     if (post?.images?.length) {
       setCurrentImageIndex((prev) =>
-        prev == 0 ? post.images.length - 1 : prev - 1,
+        prev === 0 ? post.images.length - 1 : prev - 1,
       );
     }
   };
+
   const renderPostsGrid = (postsToRender: Post[], showAddButton = true) => (
     <div className="grid grid-cols-3 gap-1 sm:gap-2 md:gap-3">
       {postsToRender.map((post) => (
@@ -546,6 +625,7 @@ const Profile = () => {
       )}
     </div>
   );
+
   if (loading)
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -556,6 +636,7 @@ const Profile = () => {
         />
       </div>
     );
+
   if (error)
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -1023,17 +1104,15 @@ const Profile = () => {
                     <span>{selectedPost?.postView || 0} views</span>
                   </div>
                 </div>
-
                 <div className="mt-4">
                   <h4 className="font-semibold mb-3">Comments</h4>
                   {(() => {
-                    // 🔥 FIX: Prioritize selectedPost comments (they're always complete)
                     const comments =
                       selectedPost?.comments || fullPostData?.comments || [];
-
+                        const commentId = comment.commentId || comment.postCommentId || i;
                     return comments.length > 0 ? (
                       <div className="space-y-3">
-                        {comments.map((comment: Comment, i: number) => {
+                        {comments.map((comment: any, i: number) => {
                           const avatarSrc = comment.userImage
                             ? `https://instagram-api.softclub.tj/images/${comment.userImage}`
                             : "https://via.placeholder.com/40?text=User";
@@ -1047,7 +1126,7 @@ const Profile = () => {
                                 <img
                                   src={avatarSrc}
                                   alt={comment.userName || "User"}
-                                  className="w-full h-auto object-cover"
+                                  className="w-full h-full object-cover"
                                   onError={(e) => {
                                     e.currentTarget.src =
                                       "https://via.placeholder.com/40?text=User";
@@ -1064,16 +1143,14 @@ const Profile = () => {
                                       {formatDate(comment.dateCommented)}
                                     </span>
                                   </div>
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteComment(
-                                          comment.postCommentId,
-                                        )
-                                      }
-                                      className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:text-red-400"
-                                    >
-                                      Delete
-                                    </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteComment(commentId)
+                                    }
+                                    className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:text-red-400"
+                                  >
+                                    Delete
+                                  </button>
                                 </div>
                                 <p className="text-gray-300 text-sm mt-1">
                                   {comment.comment}
@@ -1091,6 +1168,7 @@ const Profile = () => {
                   })()}
                 </div>
               </div>
+
               <div className="p-4 border-t border-gray-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -1124,12 +1202,13 @@ const Profile = () => {
                     )}
                   </button>
                 </div>
+
                 <div className="flex gap-2">
                   <Input
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Add a comment..."
-                    className="flex-1 bg-gray-900 placeholder:text-gray-500 border-gray-700 text-white"
+                    className="flex-1 bg-gray-900 border-gray-700 text-white"
                     onPressEnter={() =>
                       handleAddComment(selectedPost?.postId || 0)
                     }
@@ -1142,7 +1221,6 @@ const Profile = () => {
                     disabled={!newComment.trim()}
                     type="primary"
                     size="large"
-                    className="text-white"
                   >
                     Post
                   </Button>
