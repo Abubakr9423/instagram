@@ -20,7 +20,7 @@ export const createApiMessages = createSlice({
     name: 'messagesApi',
     initialState,
     reducers: {
-        setSelectedChat: (state, action: PayloadAction<string | null>) => {
+        setSelectedChat: (state, action) => {
             state.selectedChatId = action.payload;
         }
     },
@@ -43,7 +43,7 @@ export const createApiMessages = createSlice({
             })
             .addCase(getChatById.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
-                state.messages = action.payload?.data || action.payload || [];
+                state.messages = action.payload?.data
             })
             .addCase(getChatById.rejected, (state, action) => {
                 state.loading = false;
