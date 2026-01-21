@@ -352,7 +352,35 @@ const Profile = () => {
         },
       );
       if (!res.ok) throw new Error("Failed to add comment");
+
+      // Fetch updated post data
       await fetchFullPostData(postId);
+
+      // ALSO update the selectedPost state immediately for better UX
+      if (selectedPost?.postId === postId) {
+        const updatedComments = [
+          ...(selectedPost.comments || []),
+          {
+            commentId: Date.now(), // Temporary ID
+            userId: data?.userId || "",
+            userName: data?.userName || "You",
+            userImage: data?.image || "",
+            content: newComment,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+
+        setSelectedPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: updatedComments,
+                commentCount: (prev.commentCount || 0) + 1,
+              }
+            : null,
+        );
+      }
+
       setNewComment("");
       showMessage("success", "Комментарий добавлен");
     } catch (err: any) {
@@ -372,7 +400,37 @@ const Profile = () => {
         },
       );
       if (!res.ok) throw new Error("Failed to delete comment");
-      if (fullPostData?.postId) await fetchFullPostData(fullPostData.postId);
+
+      // Update selectedPost state immediately
+      if (selectedPost?.comments) {
+        setSelectedPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: prev.comments.filter(
+                  (c) => c.commentId !== commentId,
+                ),
+                commentCount: Math.max((prev.commentCount || 1) - 1, 0),
+              }
+            : null,
+        );
+      }
+
+      // Also update fullPostData if it exists
+      if (fullPostData?.comments) {
+        setFullPostData((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: prev.comments.filter(
+                  (c) => c.commentId !== commentId,
+                ),
+                commentCount: Math.max((prev.commentCount || 1) - 1, 0),
+              }
+            : null,
+        );
+      }
+
       showMessage("success", "Комментарий удалён");
     } catch (err: any) {
       showMessage("error", "Не удалось удалить комментарий");
@@ -1051,6 +1109,7 @@ const Profile = () => {
                   {(() => {
                     const comments =
                       selectedPost?.comments || fullPostData?.comments || [];
+                        const commentId = comment.commentId || comment.postCommentId || i;
                     return comments.length > 0 ? (
                       <div className="space-y-3">
                         {comments.map((comment: any, i: number) => {
@@ -1084,19 +1143,14 @@ const Profile = () => {
                                       {formatDate(comment.dateCommented)}
                                     </span>
                                   </div>
-                                  {(comment.userId === data?.userId ||
-                                    selectedPost?.userId === data?.userId) && (
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteComment(
-                                          comment.postCommentId,
-                                        )
-                                      }
-                                      className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:text-red-400"
-                                    >
-                                      Delete
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteComment(commentId)
+                                    }
+                                    className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:text-red-400"
+                                  >
+                                    Delete
+                                  </button>
                                 </div>
                                 <p className="text-gray-300 text-sm mt-1">
                                   {comment.comment}
