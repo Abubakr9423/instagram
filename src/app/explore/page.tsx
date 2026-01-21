@@ -1,94 +1,61 @@
-'use client'
-import React, { useState } from 'react'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import FavoriteIcon from '@mui/icons-material/Favorite'
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline'
+"use client";
 
-const sampleData = [
-  {
-    id: 1,
-    mediaType: 'image',
-    mediaUrl: 'https://picsum.photos/400/400?1',
-    likesCount: 120,
-    commentsCount: 30,
-  },
-  {
-    id: 2,
-    mediaType: 'video',
-    mediaUrl: 'https://picsum.photos/400/400?2',
-    likesCount: 300,
-    commentsCount: 50,
-  },
-  {
-    id: 3,
-    mediaType: 'image',
-    mediaUrl: 'https://picsum.photos/400/400?3',
-    likesCount: 45,
-    commentsCount: 10,
-  },
-  {
-    id: 4,
-    mediaType: 'video',
-    mediaUrl: 'https://picsum.photos/400/400?4',
-    likesCount: 200,
-    commentsCount: 40,
-  },
-  {
-    id: 5,
-    mediaType: 'image',
-    mediaUrl: 'https://picsum.photos/400/400?5',
-    likesCount: 75,
-    commentsCount: 15,
-  },
-]
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchPosts, Post } from "@/src/lib/features/explore/api";
+import { AppDispatch, RootState } from "@/src/lib/store";
 
-const ExploreDesign = () => {
-  const [data] = useState(sampleData)
+export default function ExplorePage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { posts, loading, error } = useSelector(
+    (state: RootState) => state.posts
+  );
+
+  useEffect(() => {
+    dispatch(fetchPosts());
+  }, [dispatch]);
+
+  if (loading) return <div className="p-4">Загрузка...</div>;
+  if (error) return <div className="p-4 text-red-500">Ошибка: {error}</div>;
 
   return (
-    <div className="min-h-screen p-[2px]">
-      <div className="grid grid-cols-3 gap-[2px]">
-        {data.map(item => (
+    <div className="min-h-screen p-2">
+      <div className="columns-3 gap-2 space-y-2">
+        {posts.map((item: Post) => (
           <div
-            key={item.id}
-            className={`relative group overflow-hidden cursor-pointer
-              ${item.mediaType === 'video' ? 'row-span-2' : ''}
-            `}
+            key={item._id}
+            className="relative group break-inside-avoid overflow-hidden rounded-md cursor-pointer"
           >
-            <img
-              src={item.mediaUrl}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-
-            {/* ▶ reels */}
-            {item.mediaType === 'video' && (
-              <PlayArrowIcon
-                className="absolute top-2 right-2"
-                sx={{ color: 'white', fontSize: 22 }}
+            {item.mediaUrl?.endsWith(".mp4") ? (
+              <video
+                src={item.mediaUrl}
+                muted
+                autoPlay
+                loop
+                className="w-full h-full object-cover"
               />
+            ) : (
+              <img src={item.mediaUrl || item.image} className="w-full object-cover" />
             )}
 
-            {/* hover overlay */}
-            <div className="absolute inset-0 bg-black/50 
-              flex items-center justify-center gap-6
-              opacity-0 group-hover:opacity-100 transition"
-            >
-              <div className="flex items-center gap-1 text-white">
-                <FavoriteIcon />
-                <span>{item.likesCount}</span>
-              </div>
+            {item.mediaUrl?.endsWith(".mp4") && (
+              <PlayArrowIcon className="absolute top-2 right-2 text-white" />
+            )}
 
-              <div className="flex items-center gap-1 text-white">
-                <ChatBubbleOutlineIcon />
-                <span>{item.commentsCount}</span>
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex gap-6 items-center justify-center">
+              <div className="flex gap-1 text-white">
+                <FavoriteIcon /> {item.likesCount || 0}
+              </div>
+              <div className="flex gap-1 text-white">
+                <ChatBubbleOutlineIcon /> {item.commentsCount || 0}
               </div>
             </div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }
-
-export default ExploreDesign
