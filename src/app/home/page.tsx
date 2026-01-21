@@ -81,7 +81,7 @@ useEffect(() => {
   }, [dispatch])
 
   return (
-    <div className="ml-[40px] flex gap-[40px]">
+    <div className="flex gap-[40px]">
       <div className="relative max-w-[620px]">
         <button
           onClick={scrollLeft}
@@ -153,7 +153,7 @@ useEffect(() => {
             </div>
 
             <video
-  ref={el => {
+  ref={(el) => {
     if (el && !videoRefs.current.includes(el)) {
       videoRefs.current.push(el)
     }
@@ -161,7 +161,9 @@ useEffect(() => {
   src={`https://instagram-api.softclub.tj/images/${e.images}`}
   playsInline
   loop
+  className="w-full h-[80vh] object-cover rounded-[10px] mt-[10px]"
 />
+
 
             <div className="flex items-end justify-between w-[620px] mt-[15px]">
               <div className="flex items-center gap-[20px]">
