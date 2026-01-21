@@ -1,13 +1,20 @@
 import { axiosRequest, SaveToken } from "@/src/utils/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit"
 
-export const Getchats = createAsyncThunk("auth/loginUser", async () => {
+export const Getchats = createAsyncThunk("auth/Getchats", async () => {
     try {
         const response = await axiosRequest.get("/Chat/get-chats");
-        const token = response.data?.token || response.data;
-        SaveToken(token);
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+);
+export const getChatById = createAsyncThunk("auth/getChatById", async (chatId: string) => {
+    try {
+        const response = await axiosRequest.get(`/Chat/get-chat-by-id?chatId=${chatId}`);
+        return response.data;
+    } catch (error: any) {
         console.error(error);
     }
 }
