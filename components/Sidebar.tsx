@@ -16,6 +16,7 @@ import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { instagramFont } from "@/src/app/font";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import { useEffect } from "react";
 
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -33,13 +34,25 @@ export function Sidebar() {
 
   if (pathname === "/" || pathname === "/register") return null;
 
-  const showText = pathname === "/home";
+  const isHome = pathname === "/home";
+  const isMessages = pathname.startsWith("/messages");
+
+  // ✅ Instagram behavior
+  const showText = isHome && !isMessages;
+
+  // ✅ Sync sidebar width with layout
+  useEffect(() => {
+    document.body.style.setProperty(
+      "--sidebar-width",
+      showText ? "260px" : "80px"
+    );
+  }, [showText]);
 
   return (
     <motion.aside
       initial={{ width: 80 }}
       animate={{ width: showText ? 260 : 80 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       className="h-screen border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black"
     >
       <div className="flex h-full flex-col justify-between px-3 py-4">
@@ -50,9 +63,9 @@ export function Sidebar() {
             {showText ? (
               <motion.span
                 key="logo-text"
-                initial={{ opacity: 0, x: -16 }}
+                initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 16 }}
+                exit={{ opacity: 0, x: 12 }}
                 className={clsx(
                   instagramFont.className,
                   "text-[30px] tracking-tight text-gray-900 dark:text-white select-none"
@@ -63,9 +76,9 @@ export function Sidebar() {
             ) : (
               <motion.div
                 key="logo-icon"
-                initial={{ opacity: 0, scale: 0.85 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
+                exit={{ opacity: 0, scale: 0.9 }}
               >
                 <InstagramIcon className="h-7 w-7" />
               </motion.div>
@@ -85,28 +98,22 @@ export function Sidebar() {
                 key={href}
                 href={href}
                 className={clsx(
-                  "group relative flex items-center gap-4 rounded-xl px-3 py-3 text-[15px] font-medium transition-all",
+                  "group relative flex items-center gap-4 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors",
                   active
                     ? "bg-gray-100 dark:bg-gray-900 text-black dark:text-white"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900"
                 )}
               >
-                {/* Active indicator */}
                 {active && (
                   <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-black dark:bg-white" />
                 )}
 
-                <motion.div
-                  whileHover={{ x: 2 }}
-                  className="flex items-center"
-                >
-                  <Icon
-                    className={clsx(
-                      "h-6 w-6 transition-transform",
-                      active && "scale-110"
-                    )}
-                  />
-                </motion.div>
+                <Icon
+                  className={clsx(
+                    "h-6 w-6 transition-transform",
+                    active && "scale-110"
+                  )}
+                />
 
                 {showText && <span>{label}</span>}
               </Link>
