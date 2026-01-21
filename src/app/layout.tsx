@@ -28,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex items-start justify-start ">
-            <Sidebar />
+            <div className="fixed">
+              <Sidebar />
+            </div>
             <div className=" flex-1 text-gray-900 dark:text-gray-100">
               <ReduxProvider>{children}</ReduxProvider>
               <Toaster position="top-center" reverseOrder={false} />
