@@ -8,7 +8,7 @@ import img2 from '../../../public/image copy 2.png'
 import img3 from '../../../public/image copy 3.png'
 import img4 from '../../../public/image copy 4.png'
 import { Bookmark, BookMarked, Heart, MessageCircle, Send } from 'lucide-react'
-
+import data from 
 const stories = [
   { id: 1, name: 'sabinakh', avatar: img },
   { id: 2, name: '23ag', avatar: img },
@@ -25,9 +25,9 @@ const stories = [
   { id: 13, name: 'briusartem', avatar: img }
 ]
 
-export default function Stories() {
+export default function Home() {
+  const [data] = ((state) => state.data)
   const scrollRef = useRef<HTMLDivElement>(null)
-
   const scrollLeft = () => {
     scrollRef.current?.scrollBy({ left: -120, behavior: 'smooth' })
   }
