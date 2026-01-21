@@ -21,9 +21,9 @@ export const createApiMessages = createSlice({
             .addCase(Getchats.pending, (state) => {
                 state.loading = true
             })
-            .addCase(Getchats.fulfilled, (state, action: PayloadAction<any[]>) => {
-                state.loading = false
-                state.data = action.payload
+            .addCase(Getchats.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.data = action.payload?.data || action.payload || [];
             })
             .addCase(Getchats.rejected, (state, action) => {
                 state.loading = false
