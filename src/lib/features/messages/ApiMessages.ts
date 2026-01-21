@@ -10,7 +10,7 @@ export const Getchats = createAsyncThunk("auth/Getchats", async () => {
     }
 }
 );
-export const getChatById = createAsyncThunk("auth/getChatById", async (chatId: string) => {
+export const getChatById = createAsyncThunk("auth/getChatById", async (chatId) => {
     try {
         const response = await axiosRequest.get(`/Chat/get-chat-by-id?chatId=${chatId}`);
         return response.data;

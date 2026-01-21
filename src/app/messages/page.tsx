@@ -11,34 +11,25 @@ import Link from 'next/link'
 
 function page() {
     const dispatch = useDispatch<AppDispatch>()
+    const { chats, messages, loading, error } = useSelector((state: RootState) => state.messagesApi)
+    const [selectedChat, setSelectedChatLocal] = useState<any>(null);
+    console.log(messages);
 
-    // Гирифтани маълумот аз Redux state
-    const { chats, loading, error } = useSelector((state: RootState) => state.messagesApi)
-    const [selectedChat, setSelectedChat] = useState<any>(null);
-    const [messages, setMessages] = useState<any[]>([])
 
     useEffect(() => {
         dispatch(Getchats())
     }, [dispatch])
 
     useEffect(() => {
-        const fetchMyMessages = async () => {
-            if (selectedChat?.chatId) {
-                try {
-                    const res = await dispatch(getChatById(selectedChat.chatId)).unwrap();
-                    if (res && res.data) {
-                        setMessages(res.data);
-                    }
-                } catch (err) {
-                    console.error("Error fetching messages:", err);
-                }
-            }
-        };
-        fetchMyMessages();
+        if (selectedChat?.chatId) {
+            dispatch(getChatById(selectedChat.chatId))
+        }
     }, [selectedChat, dispatch]);
 
-    console.log(messages);
-
+    const handleChatClick = (chat: any) => {
+        setSelectedChatLocal(chat);
+        console.log(chat);
+    };
 
 
     return (
@@ -75,9 +66,9 @@ function page() {
                         <div className='overflow-y-auto flex flex-col h-112.5 '>
                             {loading && <div className="h-screen flex justify-center items-center"><div className="w-12 h-12 border-4 border-transparent  border-t-gray-700 rounded-full animate-spin" /></div>}
 
-                            {chats?.length > 0 ? (
+                            {chats?.length > 0 && (
                                 chats.map((chat: any) => (
-                                    <div key={chat.chatId} onClick={() => setSelectedChat(chat)} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
+                                    <div key={chat.chatId} onClick={() => handleChatClick(chat)} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
                                         <Image
                                             className='w-11 h-11 rounded-full object-cover'
                                             src={chat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${chat.receiveUserImage}` : img}
@@ -87,13 +78,10 @@ function page() {
                                         />
                                         <div className='text-sm overflow-hidden'>
                                             <h1 className='font-bold truncate'>{chat.receiveUserName}</h1>
-                                            <p className='text-gray-500 truncate'>{chat.lastMessage || "No messages"}</p>
+                                            <p className='text-gray-500 truncate'>{chat.lastMessage}</p>
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                !loading && <div className='flex justify-center items-center h-screen'><p>Chats not found</p></div>
-                            )
+                                )))
                             }
                         </div>
                     </div>
@@ -116,38 +104,39 @@ function page() {
                                 <div className='flex gap-4'><Phone size={25} /><Video size={30} /><Info size={30} /></div>
                             </div>
 
-                            <div className='flex justify-center gap-1 items-center flex-col overflow-y-auto p-4'>
-                                <Image
-                                    className=' rounded-full'
-                                    src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
-                                    alt="" width={80} height={50}
-                                />
-                                <h1 className='text-2xl font-semibold'>{selectedChat.receiveUserName}</h1>
-                                <p className=' text-gray-400 mb-2'>Instagram</p>
-                                <button className='py-1 px-3 rounded-xl text-black bg-gray-200'>View profile</button>
-                            </div>
+                            <div className='flex-1 overflow-y-auto p-4 flex flex-col'>
 
-                            <div className='flex-1 overflow-y-auto p-4 flex flex-col gap-3'>
-                                {messages.length > 0 ? (
-                                    messages.map((msg: any) => (
-                                        <div
-                                            key={msg.messageId}
-                                            className={`max-w-[70%] p-3 rounded-2xl text-sm ${
-                                                // Ислоҳи ин ҷо: ном бояд дақиқ ба номи дар Swagger буда мувофиқат кунад
-                                                msg.userName === "nazarov.011"
-                                                    ? 'bg-blue-500 text-white self-end'
-                                                    : 'bg-gray-200 dark:bg-[#262626] self-start'
-                                                }`}
-                                        >
-                                            <p>{msg.messageText}</p>
-                                            <span className="text-[10px] opacity-70 block text-right">
-                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-center text-gray-500">No messages yet</p>
-                                )}
+                                <div className='flex justify-center gap-1 items-center flex-col py-8'>
+                                    <Image
+                                        className='rounded-full'
+                                        src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
+                                        alt="" width={80} height={80}
+                                    />
+                                    <h1 className='text-2xl font-semibold'>{selectedChat.receiveUserName}</h1>
+                                    <p className='text-gray-400 mb-2'>Instagram</p>
+                                    <button className='py-1 px-3 rounded-xl text-black bg-gray-200'>View profile</button>
+                                </div>
+
+                                <div className='flex flex-col gap-3'>
+                                    {messages.length > 0 ? (
+                                        messages.map((msg: any) => (
+                                            <div
+                                                key={msg.messageId}
+                                                className={`max-w-[70%] p-3 rounded-2xl text-sm ${msg.userName === "nazarov.011"
+                                                        ? 'bg-blue-500 text-white self-end'
+                                                        : 'bg-gray-200 dark:bg-[#262626] self-start'
+                                                    }`}
+                                            >
+                                                <p>{msg.messageText}</p>
+                                                <span className="text-[10px] opacity-70 block text-right">
+                                                    {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-center text-gray-500">No messages yet</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className='flex items-center gap-2 px-3 py-2 border-t bg-white dark:bg-[#1111]'>
