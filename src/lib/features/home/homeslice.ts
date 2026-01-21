@@ -1,44 +1,28 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { axiosRequest } from '@/src/utils/axios'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { axiosRequest, SaveToken } from '@/src/utils/axios'
 
-type CounterState = {
-  value: number
+type HomeState = {
   data: any[]
   loading: boolean
 }
 
-const initialState: CounterState = {
-  value: 0,
+const initialState: HomeState = {
   data: [],
   loading: false
 }
 
-export const getProduct = createAsyncThunk(
-  'counter/getProduct',
+export const getProduct = createAsyncThunk<any[]>(
+  'home/getProduct',
   async () => {
-    try {
-      const res = await axiosRequest.get('https://instagram-api.softclub.tj/Post/get-reels')
-      return res.data.data
-    } catch (error) {
-      console.error(error);
-    }
+    const res = await axiosRequest.get(`Post/get-reels`)
+    return res.data.data;
   }
 )
 
-const counterSlice = createSlice({
-  name: 'counter',
+const homeSlice = createSlice({
+  name: 'home',
   initialState,
-  reducers: {
-    increment: state => {
-      state.value += 1
-    },
-    decrement: state => {
-      state.value -= 1
-    },
-    incrementByAmount: (state, action: PayloadAction<number>) => {
-      state.value += action.payload
-    }
-  },
+  reducers: {},
   extraReducers: builder => {
     builder
       .addCase(getProduct.pending, state => {
@@ -54,5 +38,4 @@ const counterSlice = createSlice({
   }
 })
 
-export const { increment, decrement, incrementByAmount } = counterSlice.actions
-export default counterSlice.reducer
+export default homeSlice.reducer
