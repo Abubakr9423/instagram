@@ -1,20 +1,39 @@
 "use client";
 import { CiNoWaitingSign } from "react-icons/ci";
-import { FaPlus, FaCog, FaEdit, FaArchive, FaLink, FaCamera, FaHeart, FaComment, FaTimes, FaBookmark, FaShare, FaChevronLeft, FaChevronRight, FaTrash, FaEye, FaRegHeart, FaRegBookmark } from "react-icons/fa";
+import {
+  FaPlus,
+  FaCog,
+  FaEdit,
+  FaArchive,
+  FaLink,
+  FaCamera,
+  FaHeart,
+  FaComment,
+  FaTimes,
+  FaBookmark,
+  FaShare,
+  FaChevronLeft,
+  FaChevronRight,
+  FaTrash,
+  FaEye,
+  FaRegHeart,
+  FaRegBookmark,
+} from "react-icons/fa";
 import { MdGridOn, MdPlayArrow, MdPersonOutline } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 import { FiShare2 } from "react-icons/fi";
 import Link from "next/link";
 import { Modal, message, Spin, Upload, Button, Input } from "antd";
 import { UploadOutlined, LoadingOutlined } from "@ant-design/icons";
+import { redirect } from "next/navigation";
 
 type Comment = {
-  commentId: number;
+  postCommentId: number;
   userId: string;
-  userName: string;
-  userImage: string;
-  content: string;
-  createdAt: string;
+  userName: string | null; // ✅ Can be null
+  userImage: string | null; // ✅ Can be null
+  comment: string; // ✅ Fixed
+  dateCommented: string; // ✅ Fixed
 };
 
 type Post = {
@@ -42,7 +61,9 @@ const Profile = () => {
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingSaved, setLoadingSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<"posts" | "saved" | "tagged">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "saved" | "tagged">(
+    "posts",
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState("");
   const [modalAdd, setModalAdd] = useState(false);
@@ -58,28 +79,21 @@ const Profile = () => {
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-
   const imageObserver = useRef<IntersectionObserver | null>(null);
   const observedImages = useRef<Set<Element>>(new Set());
-
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token found");
     return {
       Authorization: `Bearer ${token}`,
-      accept: "*/*",
     };
   };
-
   useEffect(() => {
     fetchData();
     fetchPosts();
   }, []);
-
   useEffect(() => {
     if (activeTab === "saved" && savedPosts.length === 0) fetchSavedPosts();
   }, [activeTab]);
-
   useEffect(() => {
     imageObserver.current = new IntersectionObserver(
       (entries) => {
@@ -93,39 +107,43 @@ const Profile = () => {
           }
         });
       },
-      { rootMargin: "50px" }
+      { rootMargin: "50px" },
     );
     return () => imageObserver.current?.disconnect();
   }, []);
-
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath || imagePath === "null" || imagePath === "undefined") return "https://via.placeholder.com/400?text=Post+Image";
+    if (!imagePath || imagePath === "null" || imagePath === "undefined")
+      return "https://via.placeholder.com/400?text=Post+Image";
     return `https://instagram-api.softclub.tj/images/${imagePath}`;
   };
-
   const getAvatarUrl = (imagePath: string) => {
-    if (!imagePath || imagePath === "null" || imagePath === "undefined") return "https://via.placeholder.com/150?text=Avatar";
+    if (!imagePath || imagePath === "null" || imagePath === "undefined")
+      return "https://via.placeholder.com/150?text=Avatar";
     return `https://instagram-api.softclub.tj/images/${imagePath}`;
   };
-
   const showMessage = (type: "success" | "error" | "info", content: string) => {
     message[type](content);
   };
-
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString;
-      return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+      return date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
     } catch {
       return dateString;
     }
   };
-
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://instagram-api.softclub.tj/UserProfile/get-my-profile", { headers: getAuthHeader() });
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/UserProfile/get-my-profile",
+        { headers: getAuthHeader() },
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
       if (result?.data) {
@@ -137,32 +155,42 @@ const Profile = () => {
     } catch (err: any) {
       console.error(err);
       setError("Failed to load profile");
-      showMessage("error", "Не удалось загрузить профиль");
     } finally {
       setLoading(false);
     }
   };
-
   const fetchPosts = async () => {
     try {
       setLoadingPosts(true);
-      const res = await fetch("https://instagram-api.softclub.tj/Post/get-my-posts", { headers: getAuthHeader() });
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/Post/get-my-posts",
+        { headers: getAuthHeader() },
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
       setPosts(Array.isArray(result) ? result : result?.data || []);
     } catch (err) {
       console.error(err);
+      if (!localStorage.getItem("token")) {
+        setError("Пожалуйста, войдите в систему, чтобы просмотреть профиль.");
+        showMessage(
+          "error",
+          "Пожалуйста, войдите в систему, чтобы просмотреть профиль.",
+        );
+        redirect("/");
+      }
       showMessage("error", "Не удалось загрузить посты");
       setPosts([]);
     } finally {
       setLoadingPosts(false);
     }
   };
-
   const fetchSavedPosts = async () => {
     try {
       setLoadingSaved(true);
-      const url = new URL("https://instagram-api.softclub.tj/UserProfile/get-post-favorites");
+      const url = new URL(
+        "https://instagram-api.softclub.tj/UserProfile/get-post-favorites",
+      );
       url.searchParams.append("PageNumber", "1");
       url.searchParams.append("PageSize", "50");
       const res = await fetch(url.toString(), { headers: getAuthHeader() });
@@ -177,13 +205,20 @@ const Profile = () => {
       setLoadingSaved(false);
     }
   };
-
   const fetchFullPostData = async (postId: number) => {
     try {
       setLoadingFullPost(true);
-      const res = await fetch(`https://instagram-api.softclub.tj/Post/get-post-by-id?id=${postId}`, { headers: getAuthHeader() });
+      const res = await fetch(
+        `https://instagram-api.softclub.tj/Post/get-post-by-id?id=${postId}`,
+        { headers: getAuthHeader() },
+      );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
+
+      // 🔍 ADD THIS TO SEE WHAT YOU'RE GETTING
+      console.log("Full post data:", result);
+      console.log("Comments:", result?.data?.comments || result?.comments);
+
       setFullPostData(result?.data || result || null);
     } catch (err) {
       console.error(err);
@@ -192,11 +227,11 @@ const Profile = () => {
       setLoadingFullPost(false);
     }
   };
-
   const handleAddPost = async () => {
-    if (!title.trim() || !content.trim()) return showMessage("error", "Заполните заголовок и описание");
-    if (!images || images.length === 0) return showMessage("error", "Выберите хотя бы одно фото/видео");
-
+    if (!title.trim() || !content.trim())
+      return showMessage("error", "Заполните заголовок и описание");
+    if (!images || images.length === 0)
+      return showMessage("error", "Выберите хотя бы одно фото/видео");
     setUploading(true);
     try {
       const token = localStorage.getItem("token");
@@ -205,13 +240,14 @@ const Profile = () => {
       formData.append("title", title);
       formData.append("content", content);
       Array.from(images).forEach((image) => formData.append("images", image));
-
-      const res = await fetch("https://instagram-api.softclub.tj/Post/add-post", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/Post/add-post",
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        },
+      );
       if (!res.ok) throw new Error("Failed to add post");
       showMessage("success", "Пост добавлен");
       setModalAdd(false);
@@ -225,7 +261,6 @@ const Profile = () => {
       setUploading(false);
     }
   };
-
   const handleDeletePost = async (postId: number) => {
     Modal.confirm({
       title: "Удалить пост",
@@ -237,15 +272,21 @@ const Profile = () => {
         try {
           const token = localStorage.getItem("token");
           if (!token) throw new Error("No token found");
-          const res = await fetch(`https://instagram-api.softclub.tj/Post/delete-post?id=${postId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await fetch(
+            `https://instagram-api.softclub.tj/Post/delete-post?id=${postId}`,
+            {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
           if (!res.ok) throw new Error("Failed to delete post");
           showMessage("success", "Пост удалён");
-          setPosts(posts.filter(p => p.postId !== postId));
-          setSavedPosts(savedPosts.filter(p => p.postId !== postId));
-          if (isPostModalOpen && (selectedPost?.postId === postId || fullPostData?.postId === postId)) {
+          setPosts(posts.filter((p) => p.postId !== postId));
+          setSavedPosts(savedPosts.filter((p) => p.postId !== postId));
+          if (
+            isPostModalOpen &&
+            (selectedPost?.postId === postId || fullPostData?.postId === postId)
+          ) {
             setIsPostModalOpen(false);
             setSelectedPost(null);
             setFullPostData(null);
@@ -256,27 +297,31 @@ const Profile = () => {
       },
     });
   };
-
   const handleLikePost = async (postId: number) => {
     try {
-      const res = await fetch(`https://instagram-api.softclub.tj/Post/like-post?postId=${postId}`, {
-        method: "POST",
-        headers: getAuthHeader(),
-      });
+      const res = await fetch(
+        `https://instagram-api.softclub.tj/Post/like-post?postId=${postId}`,
+        {
+          method: "POST",
+          headers: getAuthHeader(),
+        },
+      );
       if (!res.ok) throw new Error("Failed to like");
       await fetchFullPostData(postId);
     } catch (err) {
       showMessage("error", "Не удалось поставить лайк");
     }
   };
-
   const handleAddToFavorites = async (postId: number) => {
     try {
-      const res = await fetch("https://instagram-api.softclub.tj/Post/add-post-favorite", {
-        method: "POST",
-        headers: { ...getAuthHeader(), "Content-Type": "application/json" },
-        body: JSON.stringify({ postId }),
-      });
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/Post/add-post-favorite",
+        {
+          method: "POST",
+          headers: { ...getAuthHeader(), "Content-Type": "application/json" },
+          body: JSON.stringify({ postId }),
+        },
+      );
       if (!res.ok) throw new Error("Failed to favorite");
       await fetchFullPostData(postId);
       showMessage("success", "Добавлено в избранное");
@@ -284,16 +329,17 @@ const Profile = () => {
       showMessage("error", "Не удалось добавить в избранное");
     }
   };
-
   const handleAddComment = async (postId: number) => {
-    if (!newComment.trim()) return;
     setSubmittingComment(true);
     try {
-      const res = await fetch("https://instagram-api.softclub.tj/Post/add-comment", {
-        method: "POST",
-        headers: { ...getAuthHeader(), "Content-Type": "application/json" },
-        body: JSON.stringify({ comment: newComment, postId }),
-      });
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/Post/add-comment",
+        {
+          method: "POST",
+          headers: { ...getAuthHeader(), "Content-Type": "application/json" },
+          body: JSON.stringify({ comment: newComment, postId: postId }),
+        },
+      );
       if (!res.ok) throw new Error("Failed to add comment");
       await fetchFullPostData(postId);
       setNewComment("");
@@ -304,13 +350,15 @@ const Profile = () => {
       setSubmittingComment(false);
     }
   };
-
   const handleDeleteComment = async (commentId: number) => {
     try {
-      const res = await fetch(`https://instagram-api.softclub.tj/Post/delete-comment?commentId=${commentId}`, {
-        method: "DELETE",
-        headers: getAuthHeader(),
-      });
+      const res = await fetch(
+        `https://instagram-api.softclub.tj/Post/delete-comment?commentId=${commentId}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeader(),
+        },
+      );
       if (!res.ok) throw new Error("Failed to delete comment");
       if (fullPostData?.postId) await fetchFullPostData(fullPostData.postId);
       showMessage("success", "Комментарий удалён");
@@ -318,25 +366,29 @@ const Profile = () => {
       showMessage("error", "Не удалось удалить комментарий");
     }
   };
-
   const handleViewPost = async (postId: number) => {
     try {
-      await fetch(`https://instagram-api.softclub.tj/Post/view-post?postId=${postId}`, {
-        method: "POST",
-        headers: getAuthHeader(),
-      });
+      await fetch(
+        `https://instagram-api.softclub.tj/Post/view-post?postId=${postId}`,
+        {
+          method: "POST",
+          headers: getAuthHeader(),
+        },
+      );
     } catch (err) {
       console.error("View error:", err);
     }
   };
-
   const handleBioSave = async () => {
     try {
-      const res = await fetch("https://instagram-api.softclub.tj/UserProfile/update-user-profile", {
-        method: "PUT",
-        headers: { ...getAuthHeader(), "Content-Type": "application/json" },
-        body: JSON.stringify({ about: editedBio, gender: 0 }),
-      });
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/UserProfile/update-user-profile",
+        {
+          method: "PUT",
+          headers: { ...getAuthHeader(), "Content-Type": "application/json" },
+          body: JSON.stringify({ about: editedBio, gender: 0 }),
+        },
+      );
       if (!res.ok) throw new Error("Failed to update bio");
       showMessage("success", "Профиль обновлён");
       setIsEditing(false);
@@ -345,7 +397,6 @@ const Profile = () => {
       showMessage("error", err.message || "Ошибка обновления профиля");
     }
   };
-
   const handleAvatarUpload = async (file: File) => {
     setUploadingAvatar(true);
     try {
@@ -353,11 +404,14 @@ const Profile = () => {
       if (!token) throw new Error("No token");
       const formData = new FormData();
       formData.append("imageFile", file);
-      const res = await fetch("https://instagram-api.softclub.tj/UserProfile/update-user-image-profile", {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+        "https://instagram-api.softclub.tj/UserProfile/update-user-image-profile",
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        },
+      );
       if (!res.ok) throw new Error("Failed to upload avatar");
       showMessage("success", "Аватар обновлён");
       await fetchData();
@@ -367,7 +421,6 @@ const Profile = () => {
       setUploadingAvatar(false);
     }
   };
-
   const handleAvatarDelete = async () => {
     Modal.confirm({
       title: "Удалить аватар",
@@ -377,10 +430,13 @@ const Profile = () => {
       cancelText: "Отмена",
       async onOk() {
         try {
-          const res = await fetch("https://instagram-api.softclub.tj/UserProfile/delete-user-image-profile", {
-            method: "DELETE",
-            headers: getAuthHeader(),
-          });
+          const res = await fetch(
+            "https://instagram-api.softclub.tj/UserProfile/delete-user-image-profile",
+            {
+              method: "DELETE",
+              headers: getAuthHeader(),
+            },
+          );
           if (!res.ok) throw new Error("Failed to delete avatar");
           showMessage("success", "Аватар удалён");
           await fetchData();
@@ -390,7 +446,6 @@ const Profile = () => {
       },
     });
   };
-
   const openPostModal = async (post: Post) => {
     setSelectedPost(post);
     setCurrentImageIndex(0);
@@ -398,7 +453,6 @@ const Profile = () => {
     await handleViewPost(post.postId);
     await fetchFullPostData(post.postId);
   };
-
   const closePostModal = () => {
     setIsPostModalOpen(false);
     setSelectedPost(null);
@@ -406,24 +460,25 @@ const Profile = () => {
     setNewComment("");
     setCurrentImageIndex(0);
   };
-
   const nextImage = () => {
     const post = fullPostData || selectedPost;
     if (post?.images?.length) {
-      setCurrentImageIndex(prev => prev === post.images.length - 1 ? 0 : prev + 1);
+      setCurrentImageIndex((prev) =>
+        prev == post.images.length - 1 ? 0 : prev + 1,
+      );
     }
   };
-
   const prevImage = () => {
     const post = fullPostData || selectedPost;
     if (post?.images?.length) {
-      setCurrentImageIndex(prev => prev === 0 ? post.images.length - 1 : prev - 1);
+      setCurrentImageIndex((prev) =>
+        prev == 0 ? post.images.length - 1 : prev - 1,
+      );
     }
   };
-
   const renderPostsGrid = (postsToRender: Post[], showAddButton = true) => (
     <div className="grid grid-cols-3 gap-1 sm:gap-2 md:gap-3">
-      {postsToRender.map(post => (
+      {postsToRender.map((post) => (
         <div
           key={post.postId}
           className="aspect-square relative group cursor-pointer"
@@ -435,9 +490,16 @@ const Profile = () => {
               alt={post.title}
               className="w-full h-full object-cover"
               loading="lazy"
-              onError={e => (e.currentTarget.src = "https://via.placeholder.com/400?text=Post+Image")}
-              ref={el => {
-                if (el && imageObserver.current && !observedImages.current.has(el)) {
+              onError={(e) =>
+                (e.currentTarget.src =
+                  "https://via.placeholder.com/400?text=Post+Image")
+              }
+              ref={(el) => {
+                if (
+                  el &&
+                  imageObserver.current &&
+                  !observedImages.current.has(el)
+                ) {
                   imageObserver.current.observe(el);
                   observedImages.current.add(el);
                 }
@@ -446,7 +508,9 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
             <div className="flex items-center gap-1 text-white">
-              <FaHeart className={`text-lg ${post.postLike ? "text-red-500" : ""}`} />
+              <FaHeart
+                className={`text-lg ${post.postLike ? "text-red-500" : ""}`}
+              />
               <span className="font-semibold">{post.postLikeCount || 0}</span>
             </div>
             <div className="flex items-center gap-1 text-white">
@@ -456,7 +520,13 @@ const Profile = () => {
           </div>
           {post.images?.length > 1 && (
             <div className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="24" height="24">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="white"
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+              >
                 <path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z" />
               </svg>
             </div>
@@ -476,29 +546,40 @@ const Profile = () => {
       )}
     </div>
   );
-
-  if (loading) return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <Spin indicator={<LoadingOutlined style={{ fontSize: 48, color: "#fff" }} spin />} />
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-red-500 text-xl mb-4">{error}</p>
-        <Button onClick={fetchData} type="primary">Повторить</Button>
+  if (loading)
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <Spin
+          indicator={
+            <LoadingOutlined style={{ fontSize: 48, color: "#fff" }} spin />
+          }
+        />
       </div>
-    </div>
-  );
+    );
+  if (error)
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">{error}</p>
+          <Button onClick={fetchData} type="primary">
+            Повторить
+          </Button>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-[935px] mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-xl font-semibold">{data?.userName || "Profile"}</h1>
+          <h1 className="text-xl font-semibold">
+            {data?.userName || "Profile"}
+          </h1>
           <div className="flex items-center gap-4">
-            <button onClick={() => setModalAdd(true)} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+            <button
+              onClick={() => setModalAdd(true)}
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            >
               <FaPlus className="text-lg" />
             </button>
             <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
@@ -521,7 +602,10 @@ const Profile = () => {
                   alt="Profile"
                   className="w-full h-full rounded-full object-cover border-4 border-black"
                   loading="eager"
-                  onError={e => (e.currentTarget.src = "https://via.placeholder.com/150?text=Avatar")}
+                  onError={(e) =>
+                    (e.currentTarget.src =
+                      "https://via.placeholder.com/150?text=Avatar")
+                  }
                 />
                 {uploadingAvatar && (
                   <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
@@ -532,7 +616,10 @@ const Profile = () => {
               <div className="absolute bottom-2 right-2 flex gap-2">
                 <Upload
                   showUploadList={false}
-                  beforeUpload={file => { handleAvatarUpload(file); return false; }}
+                  beforeUpload={(file) => {
+                    handleAvatarUpload(file);
+                    return false;
+                  }}
                   accept="image/*"
                 >
                   <button className="bg-gray-800 p-2 rounded-full hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100">
@@ -553,7 +640,9 @@ const Profile = () => {
 
           <div className="flex-1 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
-              <h1 className="text-2xl md:text-3xl font-light">{data?.userName || "User"}</h1>
+              <h1 className="text-2xl md:text-3xl font-light">
+                {data?.userName || "User"}
+              </h1>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setIsEditing(true)}
@@ -573,22 +662,28 @@ const Profile = () => {
                 <div className="text-gray-400 text-sm">posts</div>
               </div>
               <div className="text-center">
-                <div className="font-bold text-lg">{data?.subscribersCount || 0}</div>
+                <div className="font-bold text-lg">
+                  {data?.subscribersCount || 0}
+                </div>
                 <div className="text-gray-400 text-sm">followers</div>
               </div>
               <div className="text-center">
-                <div className="font-bold text-lg">{data?.subscriptionsCount || 0}</div>
+                <div className="font-bold text-lg">
+                  {data?.subscriptionsCount || 0}
+                </div>
                 <div className="text-gray-400 text-sm">following</div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="font-semibold">{data?.fullName || data?.userName || "User"}</div>
+              <div className="font-semibold">
+                {data?.fullName || data?.userName || "User"}
+              </div>
               {isEditing ? (
                 <div className="space-y-3">
                   <textarea
                     value={editedBio}
-                    onChange={e => setEditedBio(e.target.value)}
+                    onChange={(e) => setEditedBio(e.target.value)}
                     className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-600"
                     rows={3}
                     placeholder="Tell your story..."
@@ -614,7 +709,10 @@ const Profile = () => {
                 </p>
               )}
               {data?.website && (
-                <Link href={data.website} className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                <Link
+                  href={data.website}
+                  className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                >
                   <FaLink /> {data.website}
                 </Link>
               )}
@@ -646,10 +744,17 @@ const Profile = () => {
         </div>
 
         <div className="py-8">
-          {activeTab === "posts" && (
-            loadingPosts ? (
+          {activeTab === "posts" &&
+            (loadingPosts ? (
               <div className="min-h-[40vh] flex items-center justify-center">
-                <Spin indicator={<LoadingOutlined style={{ fontSize: 32, color: "#fff" }} spin />} />
+                <Spin
+                  indicator={
+                    <LoadingOutlined
+                      style={{ fontSize: 32, color: "#fff" }}
+                      spin
+                    />
+                  }
+                />
               </div>
             ) : posts.length > 0 ? (
               renderPostsGrid(posts, true)
@@ -659,7 +764,10 @@ const Profile = () => {
                   <MdGridOn className="text-4xl text-gray-600" />
                 </div>
                 <h3 className="text-2xl font-light mb-2">No Posts Yet</h3>
-                <p className="text-gray-400 max-w-md">When you share photos or videos, they'll appear on your profile.</p>
+                <p className="text-gray-400 max-w-md">
+                  When you share photos or videos, they'll appear on your
+                  profile.
+                </p>
                 <button
                   onClick={() => setModalAdd(true)}
                   className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-sm transition-colors"
@@ -667,13 +775,19 @@ const Profile = () => {
                   Share your first post
                 </button>
               </div>
-            )
-          )}
+            ))}
 
-          {activeTab === "saved" && (
-            loadingSaved ? (
+          {activeTab === "saved" &&
+            (loadingSaved ? (
               <div className="min-h-[40vh] flex items-center justify-center">
-                <Spin indicator={<LoadingOutlined style={{ fontSize: 32, color: "#fff" }} spin />} />
+                <Spin
+                  indicator={
+                    <LoadingOutlined
+                      style={{ fontSize: 32, color: "#fff" }}
+                      spin
+                    />
+                  }
+                />
               </div>
             ) : savedPosts.length > 0 ? (
               renderPostsGrid(savedPosts, false)
@@ -683,10 +797,11 @@ const Profile = () => {
                   <FaBookmark className="text-4xl text-gray-600" />
                 </div>
                 <h3 className="text-2xl font-light mb-2">No Saved Posts</h3>
-                <p className="text-gray-400 max-w-md">Save photos and videos that you want to see again.</p>
+                <p className="text-gray-400 max-w-md">
+                  Save photos and videos that you want to see again.
+                </p>
               </div>
-            )
-          )}
+            ))}
 
           {activeTab === "tagged" && (
             <div className="min-h-[40vh] flex items-center justify-center">
@@ -695,7 +810,9 @@ const Profile = () => {
                   <MdPersonOutline className="text-4xl text-gray-600" />
                 </div>
                 <h3 className="text-2xl font-light mb-2">No Tagged Posts</h3>
-                <p className="text-gray-400 max-w-md">Photos and videos you're tagged in will appear here.</p>
+                <p className="text-gray-400 max-w-md">
+                  Photos and videos you're tagged in will appear here.
+                </p>
               </div>
             </div>
           )}
@@ -721,7 +838,7 @@ const Profile = () => {
           <Input
             placeholder="Title"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             className="bg-gray-900 border-gray-700 text-white"
             disabled={uploading}
             size="large"
@@ -729,7 +846,7 @@ const Profile = () => {
           <Input.TextArea
             placeholder="Content"
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
             rows={4}
             className="bg-gray-900 border-gray-700 text-white"
             disabled={uploading}
@@ -737,10 +854,10 @@ const Profile = () => {
           />
           <Upload
             multiple
-            beforeUpload={file => {
-              setImages(prev => {
+            beforeUpload={(file) => {
+              setImages((prev) => {
                 const dt = new DataTransfer();
-                if (prev) Array.from(prev).forEach(f => dt.items.add(f));
+                if (prev) Array.from(prev).forEach((f) => dt.items.add(f));
                 dt.items.add(file);
                 return dt.files;
               });
@@ -750,12 +867,19 @@ const Profile = () => {
             accept="image/*,video/*"
             disabled={uploading}
           >
-            <Button icon={<UploadOutlined />} className="w-full" size="large" disabled={uploading}>
+            <Button
+              icon={<UploadOutlined />}
+              className="w-full"
+              size="large"
+              disabled={uploading}
+            >
               Select Images/Videos
             </Button>
           </Upload>
           {images && images.length > 0 && (
-            <div className="text-gray-400 text-sm">Selected: {images.length} file(s)</div>
+            <div className="text-gray-400 text-sm">
+              Selected: {images.length} file(s)
+            </div>
           )}
         </div>
       </Modal>
@@ -796,31 +920,51 @@ const Profile = () => {
                   </button>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
                     {selectedPost.images.map((_, i) => (
-                      <div key={i} className={`w-2 h-2 rounded-full ${i === currentImageIndex ? "bg-white" : "bg-gray-500"}`} />
+                      <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${i === currentImageIndex ? "bg-white" : "bg-gray-500"}`}
+                      />
                     ))}
                   </div>
                 </>
               )}
 
               {loadingFullPost ? (
-                <Spin indicator={<LoadingOutlined style={{ fontSize: 32, color: "#fff" }} spin />} />
+                <Spin
+                  indicator={
+                    <LoadingOutlined
+                      style={{ fontSize: 32, color: "#fff" }}
+                      spin
+                    />
+                  }
+                />
               ) : (
                 <>
-                  {selectedPost.images?.[currentImageIndex]?.endsWith(".mp4") ? (
+                  {selectedPost.images?.[currentImageIndex]?.endsWith(
+                    ".mp4",
+                  ) ? (
                     <video
                       src={getImageUrl(selectedPost.images[currentImageIndex])}
                       controls
                       className="max-h-full max-w-full"
                       autoPlay
                       loop
-                      onError={e => (e.currentTarget.src = "https://via.placeholder.com/600?text=Video+Error")}
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "https://via.placeholder.com/600?text=Video+Error")
+                      }
                     />
                   ) : (
                     <img
-                      src={getImageUrl(selectedPost.images?.[currentImageIndex])}
+                      src={getImageUrl(
+                        selectedPost.images?.[currentImageIndex],
+                      )}
                       alt={selectedPost?.title || "Post"}
                       className="max-h-full max-w-full object-contain"
-                      onError={e => (e.currentTarget.src = "https://via.placeholder.com/600?text=Image+Error")}
+                      onError={(e) =>
+                        (e.currentTarget.src =
+                          "https://via.placeholder.com/600?text=Image+Error")
+                      }
                     />
                   )}
                 </>
@@ -833,24 +977,40 @@ const Profile = () => {
                   src={getAvatarUrl(selectedPost?.userImage)}
                   alt={selectedPost?.userName || ""}
                   className="w-10 h-10 rounded-full object-cover"
-                  onError={e => (e.currentTarget.src = "https://via.placeholder.com/40?text=User")}
+                  onError={(e) =>
+                    (e.currentTarget.src =
+                      "https://via.placeholder.com/40?text=User")
+                  }
                 />
                 <div className="flex-1">
                   <div className="font-semibold">{selectedPost?.userName}</div>
-                  <div className="text-sm text-gray-400">{formatDate(selectedPost?.datePublished || "")}</div>
+                  <div className="text-sm text-gray-400">
+                    {formatDate(selectedPost?.datePublished || "")}
+                  </div>
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4">
                 <div className="mb-4">
-                  <h3 className="font-bold text-lg mb-2">{selectedPost?.title}</h3>
-                  <p className="text-gray-300 whitespace-pre-line">{selectedPost?.content}</p>
+                  <h3 className="font-bold text-lg mb-2">
+                    {selectedPost?.title}
+                  </h3>
+                  <p className="text-gray-300 whitespace-pre-line">
+                    {selectedPost?.content}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-6 py-4 border-y border-gray-800">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => handleLikePost(selectedPost?.postId || 0)} className="p-1">
-                      {selectedPost?.postLike ? <FaHeart className="text-red-500" /> : <FaRegHeart className="text-gray-400 hover:text-red-400" />}
+                    <button
+                      onClick={() => handleLikePost(selectedPost?.postId || 0)}
+                      className="p-1"
+                    >
+                      {selectedPost?.postLike ? (
+                        <FaHeart className="text-red-500" />
+                      ) : (
+                        <FaRegHeart className="text-gray-400 hover:text-red-400" />
+                      )}
                     </button>
                     <span>{selectedPost?.postLikeCount || 0} likes</span>
                   </div>
@@ -866,42 +1026,71 @@ const Profile = () => {
 
                 <div className="mt-4">
                   <h4 className="font-semibold mb-3">Comments</h4>
-                  {(fullPostData?.comments || selectedPost?.comments || []).length > 0 ? (
-                    <div className="space-y-3">
-                      {(fullPostData?.comments || selectedPost?.comments || []).map((comment: Comment,i:number) => (
-                        <div key={i} className="flex gap-3 group">
-                          <img
-                            src={getAvatarUrl(comment.userImage)}
-                            alt={comment.userName}
-                            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                            onError={e => (e.currentTarget.src = "https://via.placeholder.com/32?text=User")}
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold">{comment.userName}</span>
-                                <span className="text-gray-400 text-xs">{formatDate(comment.createdAt)}</span>
+                  {(() => {
+                    // 🔥 FIX: Prioritize selectedPost comments (they're always complete)
+                    const comments =
+                      selectedPost?.comments || fullPostData?.comments || [];
+
+                    return comments.length > 0 ? (
+                      <div className="space-y-3">
+                        {comments.map((comment: Comment, i: number) => {
+                          const avatarSrc = comment.userImage
+                            ? `https://instagram-api.softclub.tj/images/${comment.userImage}`
+                            : "https://via.placeholder.com/40?text=User";
+
+                          return (
+                            <div
+                              key={comment.postCommentId || i}
+                              className="flex gap-3 group"
+                            >
+                              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-800 shrink-0">
+                                <img
+                                  src={avatarSrc}
+                                  alt={comment.userName || "User"}
+                                  className="w-full h-auto object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src =
+                                      "https://via.placeholder.com/40?text=User";
+                                  }}
+                                />
                               </div>
-                              {comment.userId === data?.userId && (
-                                <button
-                                  onClick={() => handleDeleteComment(comment.commentId)}
-                                  className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                                >
-                                  Delete
-                                </button>
-                              )}
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-sm">
+                                      {comment.userName || "Unknown User"}
+                                    </span>
+                                    <span className="text-gray-400 text-xs">
+                                      {formatDate(comment.dateCommented)}
+                                    </span>
+                                  </div>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteComment(
+                                          comment.postCommentId,
+                                        )
+                                      }
+                                      className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs hover:text-red-400"
+                                    >
+                                      Delete
+                                    </button>
+                                </div>
+                                <p className="text-gray-300 text-sm mt-1">
+                                  {comment.comment}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-gray-300">{comment.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-center py-4">No comments yet</p>
-                  )}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-center py-4 text-sm">
+                        No comments yet
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
-
               <div className="p-4 border-t border-gray-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -909,7 +1098,11 @@ const Profile = () => {
                       onClick={() => handleLikePost(selectedPost?.postId || 0)}
                       className="p-2 hover:bg-gray-800 rounded-full transition-colors"
                     >
-                      {selectedPost?.postLike ? <FaHeart className="text-xl text-red-500" /> : <FaRegHeart className="text-xl text-gray-400 hover:text-red-400" />}
+                      {selectedPost?.postLike ? (
+                        <FaHeart className="text-xl text-red-500" />
+                      ) : (
+                        <FaRegHeart className="text-xl text-gray-400 hover:text-red-400" />
+                      )}
                     </button>
                     <button className="p-2 hover:bg-gray-800 rounded-full transition-colors">
                       <FaComment className="text-xl text-gray-400" />
@@ -919,20 +1112,27 @@ const Profile = () => {
                     </button>
                   </div>
                   <button
-                    onClick={() => handleAddToFavorites(selectedPost?.postId || 0)}
+                    onClick={() =>
+                      handleAddToFavorites(selectedPost?.postId || 0)
+                    }
                     className="p-2 hover:bg-gray-800 rounded-full transition-colors"
                   >
-                    {selectedPost?.postFavorite ? <FaBookmark className="text-xl text-yellow-500" /> : <FaRegBookmark className="text-xl text-gray-400 hover:text-yellow-400" />}
+                    {selectedPost?.postFavorite ? (
+                      <FaBookmark className="text-xl text-yellow-500" />
+                    ) : (
+                      <FaRegBookmark className="text-xl text-gray-400 hover:text-yellow-400" />
+                    )}
                   </button>
                 </div>
-
                 <div className="flex gap-2">
                   <Input
                     value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
+                    onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Add a comment..."
-                    className="flex-1 bg-gray-900 border-gray-700 text-white"
-                    onPressEnter={() => handleAddComment(selectedPost?.postId || 0)}
+                    className="flex-1 bg-gray-900 placeholder:text-gray-500 border-gray-700 text-white"
+                    onPressEnter={() =>
+                      handleAddComment(selectedPost?.postId || 0)
+                    }
                     disabled={submittingComment}
                     size="large"
                   />
@@ -942,6 +1142,7 @@ const Profile = () => {
                     disabled={!newComment.trim()}
                     type="primary"
                     size="large"
+                    className="text-white"
                   >
                     Post
                   </Button>
