@@ -128,6 +128,15 @@ function page() {
                                                     }`}
                                             >
                                                 <p>{msg.messageText}</p>
+                                                {msg.file ? (
+                                                    <Image
+                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                        alt="user image"
+                                                        width={200}
+                                                        height={200}
+                                                        className="rounded-lg mt-2 object-cover"
+                                                    />
+                                                ) : null}
                                                 <span className="text-[10px] opacity-70 block text-right">
                                                     {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
