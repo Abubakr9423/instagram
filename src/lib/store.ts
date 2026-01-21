@@ -1,12 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import home from "./features/home/homeslice";
-import messagesReducer from "./features/messages/messagesSlice";
-
+import create from "./features/CreatePost/postSlice";
 export const store = configureStore({
   reducer: {
     home: home,
-    messagesApi: messagesReducer,
-  },
+    post: create,
+},
 });
 
 export type RootState = ReturnType<typeof store.getState>;
