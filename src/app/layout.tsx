@@ -1,10 +1,11 @@
-// ❌ Do NOT add "use client" here
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReduxProvider } from "../lib/provider";
 import { Sidebar } from "@/components/Sidebar";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,10 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="flex items-start justify-start gap-[20px]">
+          <div className="flex items-start justify-start ">
             <Sidebar />
-            <div className="p-[10px] flex-1 text-gray-900 dark:text-gray-100">
+            <div className=" flex-1 text-gray-900 dark:text-gray-100">
               <ReduxProvider>{children}</ReduxProvider>
+              <Toaster position="top-center" reverseOrder={false} />
             </div>
           </div>
         </ThemeProvider>
