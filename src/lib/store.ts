@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import home from "./features/home/homeslice"
+import post from "./features/CreatePost/postSlice"
 
 export const store = configureStore({
     reducer: {
-        counter: home
+        counter: home,
+        post: post
     }
 })
 
