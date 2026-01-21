@@ -1,28 +1,45 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { axiosRequest, SaveToken } from '@/src/utils/axios'
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { axiosRequest } from '@/src/utils/axios'
 
-type HomeState = {
+type CounterState = {
+  value: number
   data: any[]
   loading: boolean
 }
 
-const initialState: HomeState = {
+const initialState: CounterState = {
+  value: 0,
   data: [],
   loading: false
 }
 
-export const getProduct = createAsyncThunk<any[]>(
+export const getProduct = createAsyncThunk(
   'home/getProduct',
   async () => {
-    const res = await axiosRequest.get(`Post/get-reels`)
-    return res.data.data;
+    try {
+      const {data} = await axiosRequest.get('Post/get-reels?PageNumber=1&PageSize=20')
+      return data.data
+      
+    } catch (error) {
+      console.error(error);
+    }
   }
 )
 
-const homeSlice = createSlice({
+const home = createSlice({
   name: 'home',
   initialState,
-  reducers: {},
+  reducers: {
+    increment: state => {
+      state.value += 1
+    },
+    decrement: state => {
+      state.value -= 1
+    },
+    incrementByAmount: (state, action: PayloadAction<number>) => {
+      state.value += action.payload
+    }
+  },
   extraReducers: builder => {
     builder
       .addCase(getProduct.pending, state => {
@@ -38,4 +55,5 @@ const homeSlice = createSlice({
   }
 })
 
-export default homeSlice.reducer
+export const { increment, decrement, incrementByAmount } = home.actions
+export default home.reducer

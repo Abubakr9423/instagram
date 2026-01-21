@@ -1,18 +1,17 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import Image from 'next/image'
 import img from '../../../public/image.png'
 import img1 from '../../../public/image copy.png'
 import img2 from '../../../public/image copy 2.png'
 import img3 from '../../../public/image copy 3.png'
 import img4 from '../../../public/image copy 4.png'
-import { Bookmark, BookMarked, Heart, MessageCircle, Send } from 'lucide-react'
+import { Bookmark, Heart, MessageCircle, Send } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '@reduxjs/toolkit/query'
+import type { RootState, AppDispatch } from '@/src/lib/store'
 import { getProduct } from '@/src/lib/features/home/homeslice'
-import { div } from 'motion/react-client'
-import { axiosRequest } from '@/src/utils/axios'
+import Image from 'next/image'
+
 const stories = [
   { id: 1, name: 'sabinakh', avatar: img },
   { id: 2, name: '23ag', avatar: img },
@@ -31,15 +30,13 @@ const stories = [
 
 export default function Home() {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const posts = useSelector((state: RootState) => state.data)
-  console.log(posts);
-  
-  
+
+  const dispatch = useDispatch<AppDispatch>()
+  const data = useSelector((state: RootState) => state.home.data)
+
   const scrollLeft = () => {
     scrollRef.current?.scrollBy({ left: -120, behavior: 'smooth' })
   }
-  const data = useSelector((state:RootState) => state.data)
-  const dispatch = useDispatch();
 
   const scrollRight = () => {
     scrollRef.current?.scrollBy({ left: 120, behavior: 'smooth' })
@@ -48,12 +45,13 @@ export default function Home() {
   useEffect(() => {
     dispatch(getProduct())
   }, [dispatch])
+
   return (
     <div className="ml-[40px] flex gap-[40px]">
       <div className="relative max-w-[620px]">
         <button
           onClick={scrollLeft}
-          className="absolute left-[-16px]  top-[35px] z-10 h-8 w-8 -translate-y-1/2 rounded-full bg-black/40 text-white"
+          className="absolute left-[-16px] top-[35px] z-10 h-8 w-8 -translate-y-1/2 rounded-full bg-black/40 text-white"
         >
           ‹
         </button>
@@ -91,62 +89,57 @@ export default function Home() {
             </div>
           ))}
         </div>
+
         <div className="mt-[40px]">
           <div className="flex items-center gap-[20px]">
-            <Image src={img3} alt='' />
+            <Image src={img3} alt="" />
             <div>
-              <p className='font-[700]'>terrylucas</p>
-              <p className='text-[#475569]'>Profile</p>
+              <p className="font-[700]">terrylucas</p>
+              <p className="text-[#475569]">Profile</p>
             </div>
           </div>
         </div>
 
-        <Image src={img4} alt='' className='mt-[10px]' />
-        {/* {posts?.map((e: any) => (
-  <div key={e.postId} className="mt-[20px]">
-    <div className="flex items-center gap-[20px]">
-      <Image
-        src={e.userImage || img3}
-        alt=""
-        width={40}
-        height={40}
-      />
-      <div>
-        <p className="font-[700]">{e.userName}</p>
-        <p className="text-[#475569]">Profile</p>
+        <Image src={img4} alt="" className="mt-[10px]" />
+
+        {data.map((e: any) => (
+          <div key={e.postId} className="mt-[20px]">
+            <div className="flex items-center gap-[20px]">
+              <Image
+                src={`https://instagram-api.softclub.tj/images/${e.userImage}`}
+                alt=""
+                width={40}
+                height={40}
+              />
+              <div>
+                <p className="font-[700]">{e.userName}</p>
+                <p className="text-[#475569]">Profile</p>
+              </div>
+            </div>
+
+            <video src={`https://instagram-api.softclub.tj/images/${e.images}`} />
+
+            <div className="flex items-end justify-between w-[620px] mt-[15px]">
+              <div className="flex items-center gap-[20px]">
+                <div className="flex items-center gap-[8px]">
+                  <Heart />
+                  <p className="text-[16px] font-[650]">{e.postLikeCount}</p>
+                </div>
+                <div className="flex items-center gap-[8px]">
+                  <MessageCircle />
+                  <p className="text-[16px] font-[650]">{e.commentCount}</p>
+                </div>
+                <Send />
+              </div>
+              <Bookmark />
+            </div>
+
+            <p>
+              <span className="font-[700]">{e.userName}</span> {e.content}
+            </p>
+          </div>
+        ))}
       </div>
-    </div>
-
-    <video src={`https://instagram-api.softclub.tj/z`}></video>
-    <Image
-      src={`${axiosRequest}/images/${e.images}`}
-      alt=""
-      className="mt-[10px]"
-      width={620}
-      height={400}
-    />
-
-    <div className="flex items-end justify-between w-[620px] mt-[15px]">
-      <div className="flex items-center gap-[20px]">
-        <div className="flex items-center gap-[8px]">
-          <Heart />
-          <p className="text-[16px] font-[650]">{e.postLikeCount}</p>
-        </div>
-        <div className="flex items-center gap-[8px]">
-          <MessageCircle />
-          <p className="text-[16px] font-[650]">{e.commentCount}</p>
-        </div>
-        <Send />
-      </div>
-      <Bookmark />
-    </div>
-
-    <p>
-      <span className="font-[700]">{e.userName}</span> {e.content}
-    </p>
-  </div>
-))} */}
-        </div>
 
       <div className="w-[300px]">
         <div className="flex items-center gap-4">
@@ -162,54 +155,20 @@ export default function Home() {
           <p className="font-[600] cursor-pointer">See all</p>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src={img2} alt="" width={40} height={40} />
-            <div>
-              <p className="font-[700] text-sm">terrylucas</p>
-              <p className="text-[#64748B] text-xs">Follows you</p>
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Image src={img2} alt="" width={40} height={40} />
+              <div>
+                <p className="font-[700] text-sm">terrylucas</p>
+                <p className="text-[#64748B] text-xs">Follows you</p>
+              </div>
             </div>
+            <button className="text-[#3B82F6] text-sm font-[600]">
+              Follow
+            </button>
           </div>
-          <button className="text-[#3B82F6] text-sm font-[600]">
-            Follow
-          </button>
-        </div>
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src={img2} alt="" width={40} height={40} />
-            <div>
-              <p className="font-[700] text-sm">terrylucas</p>
-              <p className="text-[#64748B] text-xs">Follows you</p>
-            </div>
-          </div>
-          <button className="text-[#3B82F6] text-sm font-[600]">
-            Follow
-          </button>
-        </div>
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src={img2} alt="" width={40} height={40} />
-            <div>
-              <p className="font-[700] text-sm">terrylucas</p>
-              <p className="text-[#64748B] text-xs">Follows you</p>
-            </div>
-          </div>
-          <button className="text-[#3B82F6] text-sm font-[600]">
-            Follow
-          </button>
-        </div>
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image src={img2} alt="" width={40} height={40} />
-            <div>
-              <p className="font-[700] text-sm">terrylucas</p>
-              <p className="text-[#64748B] text-xs">Follows you</p>
-            </div>
-          </div>
-          <button className="text-[#3B82F6] text-sm font-[600]">
-            Follow
-          </button>
-        </div>
+        ))}
       </div>
     </div>
   )
