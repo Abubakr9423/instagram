@@ -101,7 +101,7 @@ function page() {
                                         <p className='text-xs text-gray-500'>Active now</p>
                                     </div>
                                 </div>
-                                <div className='flex gap-4'><Phone size={25} /><Video size={30} /><Info size={30} /></div>
+                                <div className='flex gap-4'><Phone size={25} /><Link href="/messages/vidiocall"><Video size={30} /></Link><Info size={30} /></div>
                             </div>
 
                             <div className='flex-1 overflow-y-auto p-4 flex flex-col'>
@@ -118,13 +118,13 @@ function page() {
                                 </div>
 
                                 <div className='flex flex-col gap-3'>
-                                    {messages.length > 0 ? (
-                                        messages.map((msg: any) => (
+                                    {
+                                        [...messages].reverse().map((msg: any) => (
                                             <div
                                                 key={msg.messageId}
                                                 className={`max-w-[70%] p-3 rounded-2xl text-sm ${msg.userName === "nazarov.011"
-                                                        ? 'bg-blue-500 text-white self-end'
-                                                        : 'bg-gray-200 dark:bg-[#262626] self-start'
+                                                    ? 'bg-blue-500 text-white self-end'
+                                                    : 'bg-gray-200 dark:bg-[#262626] self-start'
                                                     }`}
                                             >
                                                 <p>{msg.messageText}</p>
@@ -133,9 +133,7 @@ function page() {
                                                 </span>
                                             </div>
                                         ))
-                                    ) : (
-                                        <p className="text-center text-gray-500">No messages yet</p>
-                                    )}
+                                    }
                                 </div>
                             </div>
 
