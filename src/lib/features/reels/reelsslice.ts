@@ -1,12 +1,11 @@
-// reelsslice.ts
 import { createSlice } from "@reduxjs/toolkit";
-import { getReels, Reel } from "./reelsapi";
+import { getReels } from "./reelsapi";
 
-type ReelsState = {
-  reels: Reel[];
+interface ReelsState {
+  reels: any[];
   loading: boolean;
   error: string | null;
-};
+}
 
 const initialState: ReelsState = {
   reels: [],
@@ -26,11 +25,11 @@ const reelsSlice = createSlice({
       })
       .addCase(getReels.fulfilled, (state, action) => {
         state.loading = false;
-        state.reels = action.payload;
+        state.reels = action.payload; 
       })
       .addCase(getReels.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Something went wrong";
+        state.error = action.payload ?? "Something went wrong";
       });
   },
 });

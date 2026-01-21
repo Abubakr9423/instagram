@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-import reelsReducer from "./features/reels/reelsslice"; 
-import homeReducer from "./features/home/homeslice"; 
+import home from "./features/home/homeslice";
+import messagesReducer from "./features/messages/messagesslice";
+import reelsslice from "./features/reels/reelsslice";
 
 export const store = configureStore({
   reducer: {
-    counter: homeReducer,
-    reels: reelsReducer,
+    counter: home,
+    messagesApi: messagesReducer,
+    reels: reelsslice,
   },
 });
 

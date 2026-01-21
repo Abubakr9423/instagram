@@ -1,11 +1,13 @@
 "use client";
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { loginUser } from '../lib/features/log/logapi';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface IFormInput {
   username: string;
@@ -17,9 +19,16 @@ const Page = () => {
   const router = useRouter();
 
   const { register, handleSubmit } = useForm<IFormInput>();
-  const onSubmit: SubmitHandler<IFormInput> = (data) => {
-    dispatch(loginUser(data));
-    router.push('/home'); 
+
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+    const resultAction = await dispatch(loginUser(data));
+
+    if (loginUser.fulfilled.match(resultAction)) {
+      toast.success("Login successful 🎉");
+      router.push('/home');
+    } else {
+      toast.error("Invalid username or password ❌");
+    }
   };
 
   return (
@@ -74,6 +83,11 @@ const Page = () => {
         <a href="#" className="mt-3 text-xs text-blue-500 hover:underline text-center">
           Forgot password?
         </a>
+        <Button className="mt-3 text-xs text-blue-500 hover:underline text-center">
+          <Link href={'/register'}>
+            Sign in
+          </Link>
+        </Button>
       </form>
     </div>
   );
