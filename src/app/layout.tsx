@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReduxProvider } from "../lib/provider";
 import { Toaster } from "react-hot-toast";
-import LayoutClient from "./AppLayout";
+import AppLayout from "./AppLayout"; // ✅ correct import
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +36,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReduxProvider>
-            <LayoutClient>{children}</LayoutClient>
+            <AppLayout>{children}</AppLayout>
             <Toaster position="top-center" reverseOrder={false} />
           </ReduxProvider>
         </ThemeProvider>

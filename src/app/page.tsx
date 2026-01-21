@@ -36,7 +36,7 @@ const Page = () => {
       <Image src="/landing-2x.png" alt="logo" width={521} height={450} />
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-3 w-80 p-6 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
+        className="flex flex-col gap-3 w-100 p-6 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
       >
         <input
           {...register("username")}

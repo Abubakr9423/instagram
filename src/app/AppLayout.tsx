@@ -3,12 +3,22 @@
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 
-export default function LayoutClient({
+export default function AppLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+
+    // ✅ AUTH PAGES — NO SIDEBAR, NO MARGINS
+    if (pathname === "/" || pathname === "/login" || pathname === "/register") {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                {children}
+            </div>
+        );
+    }
+
     const isMessages = pathname.startsWith("/messages");
 
     return (
@@ -19,7 +29,7 @@ export default function LayoutClient({
                 <Sidebar />
             </aside>
 
-            {/* Main content */}
+            {/* Main Content */}
             <main
                 className={`
           flex-1
@@ -32,12 +42,12 @@ export default function LayoutClient({
         `}
             >
                 {isMessages ? (
-                    // 💬 Messages → directly next to sidebar
+                    // 💬 Messages page → full width next to sidebar
                     <div className="h-screen">
                         {children}
                     </div>
                 ) : (
-                    // 🏠 Normal pages → centered
+                    // 🏠 Normal pages → centered feed
                     <div className="mx-auto max-w-[630px] px-4 py-6">
                         {children}
                     </div>
