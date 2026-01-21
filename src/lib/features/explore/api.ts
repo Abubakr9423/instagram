@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { axiosRequest } from "@/src/utils/axios";
 
 export interface Post {
   _id?: string;
@@ -6,20 +7,20 @@ export interface Post {
   image?: string;
   mediaUrl?: string;
   caption?: string;
+  likesCount?: number;
+  commentsCount?: number;
 }
-
 export const fetchPosts = createAsyncThunk<Post[]>(
   "posts/fetchPosts",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axiosRequest.get(
-        "/Post/get-posts"
-      );
+      const res = await axiosRequest.get("/Post/get-posts");
+      console.log("Fetched posts:", res.data.data); // для проверки данных
       return res.data.data;
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 interface PostsState {
@@ -42,6 +43,7 @@ const postsSlice = createSlice({
     builder
       .addCase(fetchPosts.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.loading = false;
