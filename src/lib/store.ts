@@ -6,7 +6,7 @@ import postsReducer from "./features/explore/api"; // <- твой slice
 
 export const store = configureStore({
   reducer: {
-    counter: home,
+    home: home,
     messagesApi: messagesReducer,
     reels: reelsslice,
     posts: postsReducer, // <- ключ posts совпадает с useSelecto
