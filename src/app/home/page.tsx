@@ -108,6 +108,7 @@ export default function Home() {
               <Image
                 src={`https://instagram-api.softclub.tj/images/${e.userImage}`}
                 alt=""
+                className='rounded-[20px]'
                 width={40}
                 height={40}
               />
@@ -117,7 +118,7 @@ export default function Home() {
               </div>
             </div>
 
-            <video src={`https://instagram-api.softclub.tj/images/${e.images}`} />
+            <video src={`https://instagram-api.softclub.tj/images/${e.images}`} autoPlay />
 
             <div className="flex items-end justify-between w-[620px] mt-[15px]">
               <div className="flex items-center gap-[20px]">
