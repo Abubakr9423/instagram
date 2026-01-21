@@ -5,7 +5,7 @@ import reelsslice from "./features/reels/reelsslice";
 
 export const store = configureStore({
   reducer: {
-    counter: home,
+    home: home,
     messagesApi: messagesReducer,
     reels: reelsslice,
   },

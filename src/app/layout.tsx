@@ -26,16 +26,41 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="flex items-start justify-start ">
-            <div className="fixed">
-              <Sidebar />
-            </div>
-            <div className=" flex-1 text-gray-900 dark:text-gray-100">
-              <ReduxProvider>{children}</ReduxProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReduxProvider>
+            <div className="relative flex min-h-screen bg-white dark:bg-black">
+
+              {/* Sidebar */}
+              <aside className="fixed left-0 top-0 z-40 h-screen">
+                <Sidebar />
+              </aside>
+
+              {/* Main Content */}
+              <main
+                className="
+                  flex-1
+                  ml-[80px]
+                  transition-all
+                  duration-300
+                  ease-in-out
+                  dark:text-gray-100
+                  text-gray-900
+                "
+              >
+                {/* when on /home we expand sidebar */}
+                <div className="max-w-[630px] mx-auto px-4 py-6">
+                  {children}
+                </div>
+              </main>
+
               <Toaster position="top-center" reverseOrder={false} />
             </div>
-          </div>
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>
