@@ -1,14 +1,14 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "instagram-api.softclub.tj",
-      },
-    ],
-  },
-};
+        protocol: 'https',
+        hostname: 'instagram-api.softclub.tj',
+        pathname: '/images/**'
+      }
+    ]
+  }
+}
 
-export default nextConfig;
+module.exports = nextConfig
