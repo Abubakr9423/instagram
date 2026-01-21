@@ -1,32 +1,63 @@
-import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+"use client";
 
-const page = () => {
+import Image from 'next/image';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { loginUser } from '../lib/features/log/logapi';
+import { useDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+
+interface IFormInput {
+  username: string;
+  password: string;
+}
+
+const Page = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const { register, handleSubmit } = useForm<IFormInput>();
+
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+    const resultAction = await dispatch(loginUser(data));
+
+    if (loginUser.fulfilled.match(resultAction)) {
+      toast.success("Login successful 🎉");
+      router.push('/home');
+    } else {
+      toast.error("Invalid username or password ❌");
+    }
+  };
+
   return (
-    <div className='flex justify-evenly items-center p-20'>
-      <Image src='/landing-2x.png' alt='logo' width={521} height={450} />
-      <form action="" className="flex flex-col gap-3 w-80 p-6 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm">
+    <div className="flex justify-evenly items-center p-20">
+      <Image src="/landing-2x.png" alt="logo" width={521} height={450} />
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-3 w-80 p-6 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
+      >
         <input
+          {...register("username")}
           type="text"
           placeholder="Phone number, username, or email"
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
 
         <input
+          {...register("password")}
           type="password"
           placeholder="Password"
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
 
-        <Link href={'/home'}>
-          <button
-            type="submit"
-            className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition"
-          >
-            Log in
-          </button>
-        </Link>
+        <button
+          type="submit"
+          className="mt-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition"
+        >
+          Log in
+        </button>
 
         <div className="flex items-center gap-2 my-4">
           <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
@@ -52,9 +83,14 @@ const page = () => {
         <a href="#" className="mt-3 text-xs text-blue-500 hover:underline text-center">
           Forgot password?
         </a>
+        <Button className="mt-3 text-xs text-blue-500 hover:underline text-center">
+          <Link href={'/register'}>
+            Sign in
+          </Link>
+        </Button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default Page;

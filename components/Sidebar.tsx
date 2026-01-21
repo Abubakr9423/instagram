@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Home, MessageCircleMoreIcon, PlusSquareIcon, Search, User } from "lucide-react";
+import { Heart, Home, MessageCircleMoreIcon, PlusSquareIcon, Search, SquarePlay, User } from "lucide-react";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { instagramFont } from "@/src/app/font";
 import { TextAnimate } from "./ui/text-animate";
@@ -12,9 +12,10 @@ export function Sidebar() {
     const pathname = usePathname();
 
     if (pathname === "/") return null;
+    if (pathname === "/register") return null;
 
     return (
-        <div className="flex flex-col justify-between h-screen w-64 border-r border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-black">
+        <div className="flex flex-col justify-between h-screen w-64 border-r border-gray-200 dark:border-gray-700 py-2 bg-white dark:bg-black">
             <div className="flex flex-col justify-between h-screen w-64 border-r border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-black">
                 <div className="flex items-center mb-8 gap-5">
                     <p
@@ -54,10 +55,7 @@ export function Sidebar() {
                         <span>Explore</span>
                     </Link>
                     <Link href="/reels" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-caret-right-square" viewBox="0 0 16 16">
-                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
-                            <path d="M5.795 12.456A.5.5 0 0 1 5.5 12V4a.5.5 0 0 1 .832-.374l4.5 4a.5.5 0 0 1 0 .748l-4.5 4a.5.5 0 0 1-.537.082" />
-                        </svg>
+                        <SquarePlay className="rounded-sm" />
                         <span>Reels</span>
                     </Link>
                     <Link href="/messages" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
@@ -73,7 +71,7 @@ export function Sidebar() {
                         <span>Create</span>
                     </Link>
                     <Link href="/profile" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                        <User className="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600" />
+                        <User className="w-6 h-6 rounded-full border border-gray-50 dark:border-white dark:border-2" />
                         <span>Profile</span>
                     </Link>
                 </div>
