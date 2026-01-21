@@ -13,7 +13,7 @@ function page() {
     const dispatch = useDispatch<AppDispatch>()
 
     // Гирифтани маълумот аз Redux state
-    const { data, loading, error } = useSelector((state: RootState) => state.messagesApi)
+    const { chats, loading, error } = useSelector((state: RootState) => state.messagesApi)
     const [selectedChat, setSelectedChat] = useState<any>(null);
     const [messages, setMessages] = useState<any[]>([])
 
@@ -25,22 +25,15 @@ function page() {
         const fetchMyMessages = async () => {
             if (selectedChat?.chatId) {
                 try {
-                    // 1. Гирифтани маълумот
                     const res = await dispatch(getChatById(selectedChat.chatId)).unwrap();
-
-                    // 2. Swagger нишон медиҳад, ки массив дар дохили res.data аст
                     if (res && res.data) {
                         setMessages(res.data);
-                    } else {
-                        setMessages([]);
                     }
                 } catch (err) {
-                    console.error("Хатогӣ:", err);
-                    setMessages([]); // Дар ҳолати хато массив холӣ мемонад
+                    console.error("Error fetching messages:", err);
                 }
             }
         };
-
         fetchMyMessages();
     }, [selectedChat, dispatch]);
 
@@ -82,8 +75,8 @@ function page() {
                         <div className='overflow-y-auto flex flex-col h-112.5 '>
                             {loading && <div className="h-screen flex justify-center items-center"><div className="w-12 h-12 border-4 border-transparent  border-t-gray-700 rounded-full animate-spin" /></div>}
 
-                            {data?.length > 0 ? (
-                                data.map((chat: any) => (
+                            {chats?.length > 0 ? (
+                                chats.map((chat: any) => (
                                     <div key={chat.chatId} onClick={() => setSelectedChat(chat)} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
                                         <Image
                                             className='w-11 h-11 rounded-full object-cover'
@@ -135,19 +128,26 @@ function page() {
                             </div>
 
                             <div className='flex-1 overflow-y-auto p-4 flex flex-col gap-3'>
-                                {messages.map((msg: any) => (
-                                    <div
-                                        key={msg.messageId}
-                                        className={`max-w-[70%] p-3 rounded-2xl text-sm ${msg.userName === "_nazarov._011" // Инҷо санҷ, ки номи худат дуруст аст ё не
-                                            ? 'bg-blue-500 text-white self-end'
-                                            : 'bg-gray-200 dark:bg-[#262626] self-start'
-                                            }`}
-                                    >
-                                        <p>{msg.messageText}</p>
-                                    </div>
-                                ))
-                                }
-
+                                {messages.length > 0 ? (
+                                    messages.map((msg: any) => (
+                                        <div
+                                            key={msg.messageId}
+                                            className={`max-w-[70%] p-3 rounded-2xl text-sm ${
+                                                // Ислоҳи ин ҷо: ном бояд дақиқ ба номи дар Swagger буда мувофиқат кунад
+                                                msg.userName === "nazarov.011"
+                                                    ? 'bg-blue-500 text-white self-end'
+                                                    : 'bg-gray-200 dark:bg-[#262626] self-start'
+                                                }`}
+                                        >
+                                            <p>{msg.messageText}</p>
+                                            <span className="text-[10px] opacity-70 block text-right">
+                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-500">No messages yet</p>
+                                )}
                             </div>
 
                             <div className='flex items-center gap-2 px-3 py-2 border-t bg-white dark:bg-[#1111]'>
