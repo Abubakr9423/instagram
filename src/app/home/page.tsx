@@ -38,6 +38,40 @@ export default function Home() {
     scrollRef.current?.scrollBy({ left: -120, behavior: 'smooth' })
   }
 
+  const initVideoObserver = (videos: HTMLVideoElement[]) => {
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach((entry) => {
+        const video = entry.target as HTMLVideoElement
+        if (entry.isIntersecting) {
+          video.play()
+          video.muted = false
+        } else {
+          video.pause()
+          video.currentTime = 0
+        }
+      })
+    },
+    { threshold: 0.6 }
+  )
+
+  videos.forEach(video => observer.observe(video))
+
+  return () => {
+    videos.forEach(video => observer.unobserve(video))
+  }
+}
+
+const videoRefs = useRef<HTMLVideoElement[]>([])
+
+useEffect(() => {
+  if (!videoRefs.current.length) return
+  return initVideoObserver(videoRefs.current)
+}, [data])
+
+
+
+
   const scrollRight = () => {
     scrollRef.current?.scrollBy({ left: 120, behavior: 'smooth' })
   }
@@ -118,7 +152,16 @@ export default function Home() {
               </div>
             </div>
 
-            <video src={`https://instagram-api.softclub.tj/images/${e.images}`} autoPlay />
+            <video
+  ref={el => {
+    if (el && !videoRefs.current.includes(el)) {
+      videoRefs.current.push(el)
+    }
+  }}
+  src={`https://instagram-api.softclub.tj/images/${e.images}`}
+  playsInline
+  loop
+/>
 
             <div className="flex items-end justify-between w-[620px] mt-[15px]">
               <div className="flex items-center gap-[20px]">
