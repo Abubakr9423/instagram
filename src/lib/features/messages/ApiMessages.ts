@@ -19,3 +19,13 @@ export const getChatById = createAsyncThunk("auth/getChatById", async (chatId) =
     }
 }
 );
+export const DeleteChatById = createAsyncThunk("auth/DeleteChatById", async (chatId, { dispatch }) => {
+    try {
+        await axiosRequest.delete(`/Chat/delete-chat?chatId=${chatId}`);
+        dispatch(Getchats())
+        return chatId
+    } catch (error: any) {
+        console.error(error);
+    }
+}
+);
