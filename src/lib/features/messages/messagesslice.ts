@@ -97,7 +97,7 @@ export const createApiMessages = createSlice({
             })
             .addCase(SendMessage.fulfilled, (state, action) => {
                 state.loading = false;
-                state.myprofile = action.payload?.data || action.payload;
+                state.messages = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(GetMyProfile.pending, (state) => {
                 state.loading = true;
