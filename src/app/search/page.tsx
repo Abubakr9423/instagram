@@ -1,23 +1,52 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, SquarePen } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { searchuser } from "@/src/lib/features/search/searchapi";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
+import { DialogHeader } from "@/components/ui/dialog";
+import { GetUsers } from "@/src/lib/features/messages/ApiMessages";
+import Image from "next/image";
 
 export default function SearchPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { Users, loading } = useSelector((state: RootState) => state.messagesApi);
+
   const [searchTerm, setSearchTerm] = useState("");
-  const data = useSelector((state) => state.search); // assume array of users
-  const dispatch = useDispatch();
+  const [searchedUsers, setSearchedUsers] = useState<any[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (searchTerm.trim() !== "") {
-      dispatch(searchuser(searchTerm));
-    }
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm.trim() !== "") {
+        dispatch(GetUsers(searchTerm));
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, dispatch]);
 
-  const handleClear = () => {
+  useEffect(() => {
+    if (Users && Users.length > 0) {
+      setSearchedUsers(Users);
+    }
+  }, [Users]);
+
+  const handleClearInput = () => {
+    setSearchTerm(""); 
+  };
+
+  const handleRemoveUser = (id: string) => {
+    setSearchedUsers((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  const handleClearAll = () => {
+    setSearchedUsers([]);
     setSearchTerm("");
+  };
+
+  const handleCreateChat = (userId: string) => {
+    console.log("Create chat with:", userId);
   };
 
   return (
@@ -25,7 +54,6 @@ export default function SearchPage() {
       <main className="flex-grow max-w-xl w-full border-l border-gray-800 p-6">
         <h1 className="text-2xl font-bold mb-5">Search</h1>
 
-        {/* Search Input */}
         <div className="relative mb-8">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
@@ -39,7 +67,7 @@ export default function SearchPage() {
             <button
               type="button"
               aria-label="Clear search"
-              onClick={handleClear}
+              onClick={handleClearInput}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
             >
               ×
@@ -47,34 +75,41 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Results */}
         <section>
           <div className="flex justify-between items-center mb-3">
             <h2 className="font-semibold text-sm">Results</h2>
-            {data?.length > 0 && (
+            {searchedUsers?.length > 0 && (
               <button
                 className="text-blue-500 text-sm hover:underline"
-                onClick={handleClear}
+                onClick={handleClearAll}
               >
                 Clear All
               </button>
             )}
           </div>
 
-          {data && data.length > 0 ? (
-            data.map((user) => (
+          {loading ? (
+            <p className="text-gray-500 text-sm">Searching...</p>
+          ) : searchedUsers && searchedUsers.length > 0 ? (
+            searchedUsers.map((user: any) => (
               <div
                 key={user.id}
                 className="flex items-center justify-between py-2"
               >
                 <div className="flex items-center gap-4">
-                  <img
-                    src={user.avatar || "/default-avatar.png"}
-                    alt={user.username}
-                    className="w-10 h-10 rounded-full"
+                  <Image
+                    src={
+                      user.avatar
+                        ? `https://instagram-api.softclub.tj/images/${user.avatar}`
+                        : "/default-avatar.png"
+                    }
+                    alt={user.userName}
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full object-cover border"
                   />
                   <div>
-                    <p className="font-semibold text-sm">{user.username}</p>
+                    <p className="font-semibold text-sm">{user.userName}</p>
                     <p className="text-xs text-gray-400">
                       {user.name} · {user.status || "Following"}
                     </p>
@@ -83,6 +118,7 @@ export default function SearchPage() {
                 <button
                   type="button"
                   aria-label="Remove recent search"
+                  onClick={() => handleRemoveUser(user.id)}
                   className="text-gray-400 hover:text-white"
                 >
                   ×
