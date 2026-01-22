@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import home from "./features/home/homeslice";
-import messagesReducer from "./features/messages/messagesSlice";
+import messagesReducer from "./features/messages/messagesslice";
+import post from "./features/CreatePost/postSlice";
 
 export const store = configureStore({
   reducer: {
     home: home,
     messagesApi: messagesReducer,
+    post: post,
   },
 });
 

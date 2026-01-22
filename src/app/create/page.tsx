@@ -5,6 +5,7 @@ import { Upload } from 'antd';
 import Image from 'next/image';
 import createimage from '@/public/createimage.png';  
 import { addImage } from '@/src/lib/features/CreatePost/postSlice';
+import { store } from '@/src/lib/store';
 import { X } from 'lucide-react';
 
 export default function CreatePage() {
@@ -18,6 +19,7 @@ export default function CreatePage() {
       window.originalFiles = [file];
       const imageUrl = URL.createObjectURL(file);
       dispatch(addImage(imageUrl));
+      console.log('post slice after addImage:', store.getState().post);
       router.push('/create/obrezka');
     }
   };
