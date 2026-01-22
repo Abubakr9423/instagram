@@ -93,7 +93,7 @@ export function Sidebar() {
               >
                 Instagram
               </motion.span>
-              
+
             ) : (
               <motion.div
                 key="logo-icon"
@@ -105,7 +105,6 @@ export function Sidebar() {
               </motion.div>
             )}
           </AnimatePresence>
-          {showText && <AnimatedThemeToggler />}
         </div>
 
         {/* Navigation */}
