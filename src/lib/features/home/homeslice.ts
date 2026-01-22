@@ -150,7 +150,7 @@ const home = createSlice({
       .addCase(postComment.fulfilled, (state, action) => {
         if (!action.payload) return
         const { id, comment } = action.payload
-        const post = state.data.find(p => p.postId == id)
+        const post = state.data.find(p => p.postId === id)
         if (post) {
           if (!post.comments) post.comments = []
           post.comments.push({
