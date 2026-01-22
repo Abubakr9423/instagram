@@ -77,7 +77,7 @@ export function Sidebar() {
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="h-screen border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0"
     >
-      <div className="flex h-full flex-col justify-between px-3 py-4">
+      <div className="flex h-full flex-col bg-white justify-between px-3 py-4">
         <div className="mb-10 flex items-center gap-3 px-2">
           <AnimatePresence mode="wait">
             {showText ? (
