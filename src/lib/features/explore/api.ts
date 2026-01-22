@@ -15,7 +15,7 @@ export const fetchPosts = createAsyncThunk<Post[]>(
   async (_, { rejectWithValue }) => {
     try {
       const res = await axiosRequest.get("/Post/get-posts");
-      console.log("Fetched posts:", res.data.data);
+      console.log("Fetched posts:", res.data.data); 
       return res.data.data;
     } catch (err: any) {
       return rejectWithValue(err.message);
