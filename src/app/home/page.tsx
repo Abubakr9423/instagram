@@ -209,7 +209,7 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
               <Image
                 src={`https://instagram-api.softclub.tj/images/${e.userImage}`}
                 alt=""
-                className="rounded-[20px] w-[40px] h-[40px] rounded-[50%]"
+                className="rounded-[20px] w-[40px] h-[40px] rounded-[50%]" 
                 width={40}
                 height={40}
               />

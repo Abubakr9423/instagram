@@ -19,36 +19,36 @@ const initialState: CounterState = {
 
 export const getProduct = createAsyncThunk(
   'home/getProduct',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       const { data } = await axiosRequest.get('Post/get-reels?PageNumber=1&PageSize=20')
       return data.data
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
 
 export const getPost = createAsyncThunk(
   'home/getPost',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       const { data } = await axiosRequest.get('/Post/get-posts')
       return data.data
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
 
 export const postLike = createAsyncThunk(
   'home/postLike',
-  async (id: number, { rejectWithValue }) => {
+  async (id: number) => {
     try {
       await axiosRequest.post(`/Post/like-post?postId=${id}`)
       return id
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
@@ -57,7 +57,6 @@ export const postComment = createAsyncThunk(
   'home/postComment',
   async (
     { id, comment }: { id: number; comment: string },
-    { rejectWithValue }
   ) => {
     try {
       await axiosRequest.post('/Post/add-comment', {
@@ -66,7 +65,7 @@ export const postComment = createAsyncThunk(
       })
       return { id, comment }
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
@@ -136,7 +135,7 @@ const home = createSlice({
       .addCase(postComment.fulfilled, (state, action) => {
         if (!action.payload) return
         const { id, comment } = action.payload
-        const post = state.data.find(p => p.postId === id)
+        const post = state.data.find(p => p.postId == id)
         if (post) {
           if (!post.comments) post.comments = []
           post.comments.push({
@@ -144,6 +143,8 @@ const home = createSlice({
             userName: 'You',
             
             userImage: null,
+            userName: 'Ibrohim',
+            userImage: `https://i.ebayimg.com/images/g/5WUAAOSwezZnTx0S/s-l400.jpg`,
             comment
           })
           post.commentCount += 1
