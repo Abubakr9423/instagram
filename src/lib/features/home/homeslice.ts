@@ -142,6 +142,7 @@ const home = createSlice({
           post.comments.push({
             postCommentId: Date.now(),
             userName: 'You',
+            
             userImage: null,
             comment
           })

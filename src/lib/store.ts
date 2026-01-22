@@ -3,7 +3,8 @@ import home from "./features/home/homeslice";
 import messagesReducer from "./features/messages/messagesslice";
 import post from "./features/CreatePost/postSlice";
 import reelsslice from "./features/reels/reelsslice";
-import postsReducer from "./features/explore/api"; // <- твой slice
+import searchslice from "./features/search/searchslice";
+import postsReducer from "./features/explore/api";
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
     messagesApi: messagesReducer,
     post: post,
     reels: reelsslice,
-    posts: postsReducer, // <- ключ posts совпадает с useSelecto
+    posts: postsReducer,
+    search: searchslice
   },
 });
 

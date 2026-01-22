@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from './../../lib/store'
-import { CreateChat, DeleteChatById, getChatById, Getchats, GetUsers } from '../../lib/features/messages/ApiMessages'
+import { CreateChat, DeleteChatById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from '../../lib/features/messages/ApiMessages'
 import { Bell, ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from "../Muhsin-s-Img/user-icons-includes-user-icons-people-icons-symbols-premiumquality-graphic-design-elements_981536-526.avif"
@@ -26,9 +26,10 @@ import { Switch } from '@/components/ui/switch'
 
 function page() {
     const dispatch = useDispatch<AppDispatch>()
-    const { chats, messages, loading, error, Users } = useSelector((state: RootState) => state.messagesApi)
+    const { chats, messages, loading, error, Users, myprofile } = useSelector((state: RootState) => state.messagesApi)
     const [selectedChat, setSelectedChatLocal] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    console.log(myprofile);
 
     useEffect(() => {
         dispatch(Getchats())
@@ -61,6 +62,28 @@ function page() {
         setIsDialogOpen(false);
     };
 
+    const [messageText, setMessageText] = useState("");
+
+    const handleSendMessage = async () => {
+        if (!messageText.trim() || !selectedChat?.chatId) return;
+
+        try {
+            await dispatch(SendMessage({
+                chatId: selectedChat.chatId.toString(),
+                message: messageText
+            })).unwrap();
+
+            setMessageText("");
+            dispatch(Getchats());
+        } catch (err) {
+            console.error("Failed to send:", err);
+        }
+    };
+
+    useEffect(() => {
+        dispatch(GetMyProfile());
+    }, [dispatch]);
+
 
     return (
         <div>
@@ -68,7 +91,7 @@ function page() {
                 <aside className='px-4 border w-[30%]'>
                     <div className='flex flex-col gap-2'>
                         <div className='flex justify-between pt-5'>
-                            <h1 className='font-bold text-[20px] cursor-pointer'>_nazarov._011</h1>
+                            <h1 className='font-bold text-[20px] cursor-pointer'>{myprofile?.userName || "Loading..."}</h1>
                             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                 <DialogTrigger asChild>
                                     <SquarePen className='text-black cursor-pointer dark:text-white' />
@@ -130,8 +153,12 @@ function page() {
                             <div className="w-20 h-20 rounded-full border border-gray-200 dark:border-gray-700 overflow-hidden  shadow-lg">
                                 <Image
                                     className="w-full h-full object-cover"
-                                    src={img}
-                                    alt="Player"
+                                    src={(myprofile?.image && myprofile.image !== "")
+                                        ? `https://instagram-api.softclub.tj/images/${myprofile.image}`
+                                        : img}
+                                    alt="My Profile"
+                                    width={80}
+                                    height={80}
                                 />
                             </div>
                         </div>
@@ -184,10 +211,25 @@ function page() {
                                             <SheetHeader>
                                                 <SheetTitle className='text-2xl'>Details</SheetTitle><br />
                                                 <SheetDescription className='flex flex-col justify-between h-[85vh]'>
-                                                    <div className='flex justify-between items-center '>
-                                                        <Bell className='text-white' />
-                                                        <h1 className='font-bold text-white text-[20px]'>Mute messages</h1>
-                                                        <Switch />
+                                                    <div>
+                                                        <div className='flex justify-between items-center '>
+                                                            <Bell className='dark:text-white text-black' />
+                                                            <h1 className='font-bold dark:text-white text-black text-[20px]'>Mute messages</h1>
+                                                            <Switch />
+                                                        </div><br />
+                                                        <div>
+                                                            <h1 className='dark:text-white text-black text-[20px] '>Members</h1><br />
+                                                            <div className='flex gap-2 items-center'>
+                                                                <Image
+                                                                    className='w-11 h-11 rounded-full'
+                                                                    src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
+                                                                    alt="" width={44} height={44}
+                                                                />
+                                                                <div>
+                                                                    <h1 className='font-bold'>{selectedChat.receiveUserName}</h1>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <div className='flex flex-col gap-2 items-start text-[18px] border-t pt-2 '>
                                                         <button className='cursor-pointer'>Nicknames</button>
@@ -219,7 +261,7 @@ function page() {
                                         [...messages].reverse().map((msg: any) => (
                                             <div
                                                 key={msg.messageId}
-                                                className={`max-w-[70%] p-3 rounded-2xl text-sm ${msg.userName === "nazarov.011"
+                                                className={`max-w-[70%] p-3 rounded-2xl text-sm ${myprofile?.userName
                                                     ? 'bg-blue-500 text-white self-end'
                                                     : 'bg-gray-200 dark:bg-[#262626] self-start'
                                                     }`}
@@ -249,14 +291,18 @@ function page() {
                                     <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} />
 
                                     <input
-                                        className='w-full bg-transparent py-2 px-3 outline-none text-sm'
+                                        className='w-full bg-transparent py-2 px-3 outline-none text-sm text-black dark:text-white'
                                         type="text"
+                                        name="message"
                                         placeholder="Message..."
+                                        value={messageText}
+                                        onChange={(e) => setMessageText(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                     />
                                     <div className='flex items-center gap-3 text-gray-600'>
                                         <Mic className='cursor-pointer hover:text-black' size={20} />
                                         <ImageDown className='cursor-pointer hover:text-black' size={20} />
-                                        <Send className='cursor-pointer text-blue-500 font-bold hover:text-blue-700' size={20} />
+                                        <Send onClick={handleSendMessage} className={`cursor-pointer font-bold ${messageText.trim() ? 'text-blue-500 hover:text-blue-700' : 'text-gray-300 pointer-events-none'}`} size={20} />
                                     </div>
                                 </div>
                             </div>

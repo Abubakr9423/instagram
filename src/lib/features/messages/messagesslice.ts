@@ -1,18 +1,38 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { CreateChat, DeleteChatById, getChatById, Getchats, GetUsers } from './ApiMessages'
+import { CreateChat, DeleteChatById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from './ApiMessages'
+import { number } from 'motion/react';
 
 type CounterState = {
     chats: any[],
     messages: any[],
     Users: any[],
+    myprofile: MyProfileType | null,
     selectedChatId: string | null,
     loading: boolean,
     error: string | null
 }
+
+interface MyProfileType {
+    about: string;
+    dateUpdated: string;
+    dob: string;
+    firstName: string;
+    gender: string;
+    image: string;
+    lastName: string;
+    locationId: number;
+    occupation: string;
+    postCount: number;
+    subscribersCount: number;
+    subscriptionsCount: number;
+    userName: string;
+}
+
 const initialState: CounterState = {
     chats: [],
     Users: [],
     messages: [],
+    myprofile: null,
     selectedChatId: null,
     loading: false,
     error: null
@@ -72,6 +92,24 @@ export const createApiMessages = createSlice({
             .addCase(CreateChat.fulfilled, (state, action) => {
                 state.loading = false;
             })
+            .addCase(SendMessage.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(SendMessage.fulfilled, (state, action) => {
+                state.loading = false;
+                state.myprofile = action.payload?.data || action.payload;
+            })
+            .addCase(GetMyProfile.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(GetMyProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.myprofile = action.payload?.data || action.payload;
+            })
+            .addCase(GetMyProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || "Error fetching profile";
+            });
     }
 })
 
