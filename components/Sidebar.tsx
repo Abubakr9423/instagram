@@ -97,6 +97,7 @@ export function Sidebar() {
               >
                 Instagram
               </motion.span>
+              
             ) : (
               <motion.div
                 key="logo-icon"

@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 
 export default function SearchPage() {
   return (
-    <div className="flex h-screen bg-black text-white">
+    <div className="flex h-screen bg-black text-white relative left-[-425px]">
       {/* Main search content right next to sidebar */}
       <main className="flex-grow max-w-xl w-full border-l border-gray-800 p-6">
         <h1 className="text-2xl font-bold mb-5">Search</h1>
