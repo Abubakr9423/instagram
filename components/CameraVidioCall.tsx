@@ -25,7 +25,6 @@ export default function Camera() {
 
         startCamera()
 
-        // Cleanup: Вақте корбар аз саҳифа меравад, камераро хомӯш мекунад
         return () => {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop())
