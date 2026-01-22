@@ -2,14 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 import home from "./features/home/homeslice";
 import messagesReducer from "./features/messages/messagesslice";
 import reelsslice from "./features/reels/reelsslice";
-import postsReducer from "./features/explore/api"; // <- твой slice
+import searchslice from "./features/search/searchslice";
+import postsReducer from "./features/explore/api";
 
 export const store = configureStore({
   reducer: {
     home: home,
     messagesApi: messagesReducer,
     reels: reelsslice,
-    posts: postsReducer, // <- ключ posts совпадает с useSelecto
+    posts: postsReducer,
+    search: searchslice
   },
 });
 
