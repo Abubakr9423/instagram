@@ -226,6 +226,7 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
                 ref={el => {
                   if (el) videoRefs.current.set(e.postId, el)
                 }}
+              onDoubleClick={() => dispatch(postLike(e.postId))}
                 src={`https://instagram-api.softclub.tj/images/${e.images}`}
                 playsInline
                 loop
@@ -265,7 +266,7 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
                 <div className="flex items-center gap-[8px]">
                 <Dialog>
   <DialogTrigger onClick={() => setActivePostId(e.postId)}>
-  <MessageCircle />
+  <MessageCircle /> 
 </DialogTrigger>
 
   <DialogContent>
@@ -317,8 +318,6 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
     </div>
   ))}
 </div>
-
-
     </DialogHeader>
   </DialogContent>
 </Dialog>
