@@ -182,7 +182,7 @@ function page() {
                                                 height={44}
                                             />
                                             <div className='text-sm overflow-hidden'>
-                                                <h1 className='font-bold truncate'>{chat.receiveUserName}</h1>
+                                                <h1 className='font-bold truncate'>{myprofile?.userName == chat.sendUserName ? chat.receiveUserName : chat.sendUserName}</h1>
                                                 <p className='text-gray-500 truncate'>{chat.lastMessage}</p>
                                             </div>
                                         </div>
