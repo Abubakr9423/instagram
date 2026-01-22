@@ -1,20 +1,28 @@
-"use client" // Ҳатман илова кунед
-
+"use client"
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from './../../lib/store'
-import { getChatById, Getchats } from '../../lib/features/messages/ApiMessages'
-import { ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+import { DeleteChatById, getChatById, Getchats } from '../../lib/features/messages/ApiMessages'
+import { Bell, ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from "../Muhsin-s-Img/user-icons-includes-user-icons-people-icons-symbols-premiumquality-graphic-design-elements_981536-526.avif"
 import Link from 'next/link'
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
+import { Switch } from '@/components/ui/switch'
 
 function page() {
     const dispatch = useDispatch<AppDispatch>()
-    const { chats, messages, loading, error } = useSelector((state: RootState) => state.messagesApi)
+    const { chats, messages, loading, error, } = useSelector((state: RootState) => state.messagesApi)
     const [selectedChat, setSelectedChatLocal] = useState<any>(null);
-    console.log(messages);
-
 
     useEffect(() => {
         dispatch(Getchats())
@@ -101,79 +109,100 @@ function page() {
                                         <p className='text-xs text-gray-500'>Active now</p>
                                     </div>
                                 </div>
-                                <div className='flex gap-4'><Phone size={25} /><Link href="/messages/vidiocall"><Video size={30} /></Link><Info size={30} /></div>
-                            </div>
-
-                            <div className='flex-1 overflow-y-auto p-4 flex flex-col'>
-
-                                <div className='flex justify-center gap-1 items-center flex-col py-8'>
-                                    <Image
-                                        className='rounded-full'
-                                        src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
-                                        alt="" width={80} height={80}
-                                    />
-                                    <h1 className='text-2xl font-semibold'>{selectedChat.receiveUserName}</h1>
-                                    <p className='text-gray-400 mb-2'>Instagram</p>
-                                    <button className='py-1 px-3 rounded-xl text-black bg-gray-200'>View profile</button>
-                                </div>
-
-                                <div className='flex flex-col gap-3'>
-                                    {
-                                        [...messages].reverse().map((msg: any) => (
-                                            <div
-                                                key={msg.messageId}
-                                                className={`max-w-[70%] p-3 rounded-2xl text-sm ${msg.userName === "nazarov.011"
-                                                    ? 'bg-blue-500 text-white self-end'
-                                                    : 'bg-gray-200 dark:bg-[#262626] self-start'
-                                                    }`}
-                                            >
-                                                <p>{msg.messageText}</p>
-                                                {msg.file ? (
-                                                    <Image
-                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
-                                                        alt="user image"
-                                                        width={200}
-                                                        height={200}
-                                                        className="rounded-lg mt-2 object-cover"
-                                                    />
-                                                ) : null}
-                                                <span className="text-[10px] opacity-70 block text-right">
-                                                    {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                            </div>
-                                        ))
-                                    }
-                                </div>
-                            </div>
-
-                            <div className='flex items-center gap-2 px-3 py-2 border-t bg-white dark:bg-[#1111]'>
-                                <div className='relative flex items-center w-full border rounded-full px-4 py-1 focus-within:border-gray-400'>
-
-                                    <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} />
-
-                                    <input
-                                        className='w-full bg-transparent py-2 px-3 outline-none text-sm'
-                                        type="text"
-                                        placeholder="Message..."
-                                    />
-                                    <div className='flex items-center gap-3 text-gray-600'>
-                                        <Mic className='cursor-pointer hover:text-black' size={20} />
-                                        <ImageDown className='cursor-pointer hover:text-black' size={20} />
-                                        <Send className='cursor-pointer text-blue-500 font-bold hover:text-blue-700' size={20} />
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <div className='flex flex-col items-center justify-center h-full'>
-                            <div className='p-4 border-2 border-black dark:border-white rounded-full mb-4'><Send size={50} /></div>
-                            <h1 className='text-xl font-bold'>Your messages</h1>
-                            <p className='text-gray-500'>Send a message to start a chat.</p>
+                                <div className='flex gap-4'><Phone size={25} /><Link href="/messages/vidiocall"><Video size={30} /></Link>
+                                    <Sheet>
+                                        <SheetTrigger><Info size={30} /></SheetTrigger>
+                                        <SheetContent>
+                                            <SheetHeader>
+                                                <SheetTitle className='text-2xl'>Details</SheetTitle><br />
+                                                <SheetDescription className='flex flex-col justify-between h-[85vh]'>
+                                                    <div className='flex justify-between items-center '>
+                                                        <Bell className='text-white' />
+                                                        <h1 className='font-bold text-white text-[20px]'>Mute messages</h1>
+                                                        <Switch />
+                                                    </div>
+                                                    <div className='flex flex-col gap-2 items-start text-[18px] border-t pt-2 '>
+                                                        <button className='cursor-pointer'>Nicknames</button>
+                                                        <button className='text-red-600 cursor-pointer'>Report</button>
+                                                        <button className='text-red-600 cursor-pointer'>Block</button>
+                                                        <button onClick={() => { dispatch(DeleteChatById(selectedChat.chatId)); setSelectedChatLocal(null)}} className='text-red-600 cursor-pointer'>Delete chat</button>
+                                                </div>
+                                            </SheetDescription>
+                                        </SheetHeader>
+                                    </SheetContent>
+                                </Sheet></div>
                         </div>
+
+                    <div className='flex-1 overflow-y-auto p-4 flex flex-col'>
+
+                        <div className='flex justify-center gap-1 items-center flex-col py-8'>
+                            <Image
+                                className='rounded-full'
+                                src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
+                                alt="" width={80} height={80}
+                            />
+                            <h1 className='text-2xl font-semibold'>{selectedChat.receiveUserName}</h1>
+                            <p className='text-gray-400 mb-2'>Instagram</p>
+                            <button className='py-1 px-3 rounded-xl text-black bg-gray-200'>View profile</button>
+                        </div>
+
+                        <div className='flex flex-col gap-3'>
+                            {
+                                [...messages].reverse().map((msg: any) => (
+                                    <div
+                                        key={msg.messageId}
+                                        className={`max-w-[70%] p-3 rounded-2xl text-sm ${msg.userName === "nazarov.011"
+                                            ? 'bg-blue-500 text-white self-end'
+                                            : 'bg-gray-200 dark:bg-[#262626] self-start'
+                                            }`}
+                                    >
+                                        <p>{msg.messageText}</p>
+                                        {msg.file ? (
+                                            <Image
+                                                src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                alt="user image"
+                                                width={200}
+                                                height={200}
+                                                className="rounded-lg mt-2 object-cover"
+                                            />
+                                        ) : null}
+                                        <span className="text-[10px] opacity-70 block text-right">
+                                            {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+
+                    <div className='flex items-center gap-2 px-3 py-2 border-t bg-white dark:bg-[#1111]'>
+                        <div className='relative flex items-center w-full border rounded-full px-4 py-1 focus-within:border-gray-400'>
+
+                            <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} />
+
+                            <input
+                                className='w-full bg-transparent py-2 px-3 outline-none text-sm'
+                                type="text"
+                                placeholder="Message..."
+                            />
+                            <div className='flex items-center gap-3 text-gray-600'>
+                                <Mic className='cursor-pointer hover:text-black' size={20} />
+                                <ImageDown className='cursor-pointer hover:text-black' size={20} />
+                                <Send className='cursor-pointer text-blue-500 font-bold hover:text-blue-700' size={20} />
+                            </div>
+                        </div>
+                    </div>
+                </>
+                ) : (
+                <div className='flex flex-col items-center justify-center h-full'>
+                    <div className='p-4 border-2 border-black dark:border-white rounded-full mb-4'><Send size={50} /></div>
+                    <h1 className='text-xl font-bold'>Your messages</h1>
+                    <p className='text-gray-500'>Send a message to start a chat.</p>
+                </div>
                     )}
-                </aside>
-            </section>
-        </div>
+            </aside>
+        </section>
+        </div >
     )
 }
 
