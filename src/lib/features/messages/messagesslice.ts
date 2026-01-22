@@ -1,15 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { DeleteChatById, getChatById, Getchats } from './ApiMessages'
+import { CreateChat, DeleteChatById, getChatById, Getchats, GetUsers } from './ApiMessages'
 
 type CounterState = {
     chats: any[],
     messages: any[],
+    Users: any[],
     selectedChatId: string | null,
     loading: boolean,
     error: string | null
 }
 const initialState: CounterState = {
     chats: [],
+    Users: [],
     messages: [],
     selectedChatId: null,
     loading: false,
@@ -56,9 +58,19 @@ export const createApiMessages = createSlice({
                 state.loading = false;
                 state.chats = action.payload?.data
             })
-            .addCase(DeleteChatById.rejected, (state, action) => {
+            .addCase(GetUsers.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || "Error";
+            })
+            .addCase(GetUsers.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.Users = action.payload?.data
+            })
+            .addCase(CreateChat.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(CreateChat.fulfilled, (state, action) => {
+                state.loading = false;
             })
     }
 })

@@ -29,3 +29,19 @@ export const DeleteChatById = createAsyncThunk("auth/DeleteChatById", async (cha
     }
 }
 );
+export const GetUsers = createAsyncThunk("auth/GetUsers", async (searchTerm: string = "") => {
+    try {
+        const response = await axiosRequest.get(`/User/get-users?userName=${searchTerm}`);
+        return response.data;
+    } catch (error: any) {
+        console.error(error);
+    }
+});
+export const CreateChat = createAsyncThunk("auth/CreateChat", async (UserId: string = "") => {
+    try {
+        const response = await axiosRequest.post(`/Chat/create-chat?receiverUserId=${UserId}`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+    }
+});
