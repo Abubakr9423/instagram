@@ -45,3 +45,25 @@ export const CreateChat = createAsyncThunk("auth/CreateChat", async (UserId: str
         console.error(error);
     }
 });
+export const SendMessage = createAsyncThunk("messages/SendMessage", async ({ chatId, message, file }: { chatId: string; message: string; file?: File }, { dispatch }) => {
+    try {
+        const formData = new FormData();
+        formData.append('ChatId', chatId);
+        formData.append('MessageText', message);
+        if (file) {
+            formData.append('File', file);
+        }
+        const response = await axiosRequest.put(`/Chat/send-message`, formData);
+        dispatch(getChatById(chatId));
+        return response.data;
+    } catch (error: any) {
+        console.error("Error sending message:", error.response?.data || error.message);
+        throw error;
+    }
+}
+);
+
+export const GetMyProfile = createAsyncThunk("auth/GetMyProfile", async () => {
+    const response = await axiosRequest.get("/UserProfile/get-my-profile");
+    return response.data;
+});
