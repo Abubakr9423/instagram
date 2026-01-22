@@ -2,10 +2,14 @@ import axios from "axios";
 
 export const SaveToken = (token: string) => {
     localStorage.setItem("authToken", token);
+    localStorage.setItem("token", token);
 };
 
 export const GetToken = () => {
-    return localStorage.getItem("authToken");
+    return (
+        localStorage.getItem("authToken"),
+        localStorage.getItem("token")
+    );
 };
 
 export const axiosRequest = axios.create({
