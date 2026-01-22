@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReduxProvider } from "../lib/provider";
 import { Toaster } from "react-hot-toast";
-import AppLayout from "./AppLayout"; // ✅ correct import
+import AppLayout from "./AppLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -25,21 +25,19 @@ export default function ExplorePage() {
   if (loading) return <div className="p-4">Загрузка...</div>;
   if (error) return <div className="p-4 text-red-500">Ошибка: {error}</div>;
 
-  // Открыть модалку
   const openModal = (post: Post, index: number) => {
     setSelectedPost(post);
     setSelectedMediaIndex(index);
   };
 
-  // Закрыть модалку
   const closeModal = () => setSelectedPost(null);
 
-  // Навигация по медиа в модалке
   const nextMedia = () => {
     if (!selectedPost) return;
     const mediaArray = (selectedPost.images || []).concat(selectedPost.mediaUrl ? [selectedPost.mediaUrl] : []);
     setSelectedMediaIndex((prev) => (prev + 1) % mediaArray.length);
   };
+
   const prevMedia = () => {
     if (!selectedPost) return;
     const mediaArray = (selectedPost.images || []).concat(selectedPost.mediaUrl ? [selectedPost.mediaUrl] : []);
@@ -48,7 +46,6 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen p-2">
-      {/* Сетка постов */}
       <div className="grid grid-cols-3 gap-2">
         {posts.map((post: Post, postIndex: number) => {
           const mediaArray: string[] = (post.images || []).concat(post.mediaUrl ? [post.mediaUrl] : []);
@@ -94,19 +91,24 @@ export default function ExplorePage() {
         })}
       </div>
 
-      {/* Модалка */}
       {selectedPost && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="relative max-w-3xl w-full bg-black rounded-md p-2">
-            <button
-              className="absolute top-2 right-2 text-white text-xl font-bold"
-              onClick={closeModal}
-            >
-              ×
-            </button>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+          <div className="relative flex max-w-[90%] max-h-[90%] bg-black rounded-md overflow-hidden shadow-lg">
+            <div className="relative flex-1 bg-black flex items-center justify-center">
+              <button
+                onClick={prevMedia}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-white text-3xl px-4 py-2 hover:bg-black/40 transition"
+              >
+                ‹
+              </button>
 
-            {/* Текущее медиа */}
-            <div className="w-full h-[500px] flex items-center justify-center">
+              <button
+                onClick={nextMedia}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-white text-3xl px-4 py-2 hover:bg-black/40 transition"
+              >
+                ›
+              </button>
+
               {(() => {
                 const mediaArray = (selectedPost.images || []).concat(selectedPost.mediaUrl ? [selectedPost.mediaUrl] : []);
                 const media = mediaArray[selectedMediaIndex];
@@ -114,36 +116,26 @@ export default function ExplorePage() {
                 const finalURL = media.startsWith("http") ? media : `${baseURL}${media}`;
 
                 return isVideo ? (
-                  <video src={finalURL} controls className="max-h-full max-w-full" />
+                  <video src={finalURL} autoPlay controls className="max-h-[90vh] max-w-[70vw]" />
                 ) : (
-                  <img src={finalURL} alt={selectedPost.caption || "media"} className="max-h-full max-w-full" />
+                  <img src={finalURL} alt={selectedPost.caption || "media"} className="max-h-[90vh] max-w-[70vw]" />
                 );
               })()}
             </div>
 
-            {/* Навигация */}
-            <div className="flex justify-between mt-2">
-              <button
-                className="text-white px-4 py-2 bg-gray-700 rounded"
-                onClick={prevMedia}
-              >
-                Prev
-              </button>
-              <button
-                className="text-white px-4 py-2 bg-gray-700 rounded"
-                onClick={nextMedia}
-              >
-                Next
-              </button>
-            </div>
-
-            {/* Лайки, комменты, подпись */}
-            <div className="text-white mt-2">
-              <div className="flex gap-4">
-                <div className="flex gap-1"><FavoriteIcon /> {selectedPost.likesCount || 0}</div>
-                <div className="flex gap-1"><ChatBubbleOutlineIcon /> {selectedPost.commentsCount || 0}</div>
+            <div className="w-[350px] bg-black text-white flex flex-col">
+              <div className="p-4 flex justify-between items-center border-b border-gray-700">
+                <div className="font-semibold">User Name</div>
+                <button onClick={closeModal} className="text-xl font-bold">×</button>
               </div>
-              <p className="mt-2">{selectedPost.caption}</p>
+
+              <div className="p-4 flex-1 overflow-y-auto">
+                <div className="flex gap-4 items-center mb-4">
+                  <FavoriteIcon /> {selectedPost.likesCount || 0}
+                  <ChatBubbleOutlineIcon /> {selectedPost.commentsCount || 0}
+                </div>
+                <p>{selectedPost.caption}</p>
+              </div>
             </div>
           </div>
         </div>

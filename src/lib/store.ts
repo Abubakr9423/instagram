@@ -9,7 +9,7 @@ export const store = configureStore({
     home: home,
     messagesApi: messagesReducer,
     reels: reelsslice,
-    posts: postsReducer, // <- ключ posts совпадает с useSelecto
+    posts: postsReducer,
   },
 });
 
