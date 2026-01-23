@@ -1,22 +1,37 @@
 "use client";
 
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import { Smile } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
 
-export default function EmojiMessages({
-  onEmojiSelect,
-}: {
-  onEmojiSelect: (emoji: any) => void;
-}) {
+const Picker = dynamic(() => import('emoji-picker-react'), { ssr: false });
+
+// Мо ба ин ҷо функсияи onEmojiSelect-ро аз волидайн мефиристем
+export default function ChatInput({ onEmojiSelect }) {
+  const [showPicker, setShowPicker] = useState(false);
+
+  const onEmojiClick = (emojiData) => {
+    onEmojiSelect(emojiData.emoji);
+    setShowPicker(false); 
+  };
+
   return (
-    <div className="shadow-xl rounded-xl overflow-hidden bg-white border border-gray-200">
-      <Picker
-        data={data}
-        onEmojiSelect={onEmojiSelect}
-        theme="light"
-        previewPosition="none"
-        skinTonePosition="none"
+    <div className="relative">
+      <Smile
+        className="cursor-pointer text-gray-500 hover:text-blue-600"
+        onClick={() => setShowPicker(!showPicker)}
       />
+
+      {showPicker && (
+        <div className="absolute bottom-12 left-0 z-50">
+          <Picker
+            onEmojiClick={onEmojiClick}
+            theme="auto"
+            width={300}
+            height={400}
+          />
+        </div>
+      )}
     </div>
   );
 }
