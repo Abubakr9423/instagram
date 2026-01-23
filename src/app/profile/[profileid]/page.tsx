@@ -1,9 +1,7 @@
 "use client";
-import { jwtDecode } from "jwt-decode";
 import {
   FaPlus,
   FaCog,
-  FaEdit,
   FaArchive,
   FaLink,
   FaCamera,
@@ -25,6 +23,7 @@ import { MdGridOn, MdPlayArrow, MdPersonOutline } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 import { FiShare2 } from "react-icons/fi";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -52,8 +51,9 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
-import { Loader2, Upload, User } from "lucide-react";
-import { useDropzone } from 'react-dropzone';
+import { Loader2, User } from "lucide-react";
+import { toast } from "sonner";
+
 type Comment = {
   commentId: number;
   userId: string;
@@ -90,22 +90,16 @@ type Follower = {
   };
 };
 
-const Profile = () => {
+const ProfileById = () => {
+  const params = useParams();
+  const userId = params?.profileid as string;
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
-  const [loadingSaved, setLoadingSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<"posts" | "saved" | "tagged">("posts");
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedBio, setEditedBio] = useState("");
-  const [modalAdd, setModalAdd] = useState(false);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [images, setImages] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"posts" | "tagged">("posts");
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [fullPostData, setFullPostData] = useState<Post | null>(null);
@@ -113,24 +107,20 @@ const Profile = () => {
   const [loadingFullPost, setLoadingFullPost] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [deletePostAlertOpen, setDeletePostAlertOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  const [deleteAvatarAlertOpen, setDeleteAvatarAlertOpen] = useState(false);
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followingModalOpen, setFollowingModalOpen] = useState(false);
+  const [followers, setFollowers] = useState<Follower[]>([]);
+  const [following, setFollowing] = useState<Follower[]>([]);
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+  const [loadingFollowing, setLoadingFollowing] = useState(false);
+  const [followersTab, setFollowersTab] = useState<"followers" | "following">(
+    "followers",
+  );
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const imageObserver = useRef<IntersectionObserver | null>(null);
   const observedImages = useRef<Set<Element>>(new Set());
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles: any) => {
-      setImages(acceptedFiles);
-    },
-    accept: {
-      'image/*': [],
-      'video/*': []
-    },
-    multiple: true
-  });
 
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");
@@ -198,14 +188,11 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    fetchData();
-    fetchPosts();
-    getID()
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === "saved" && savedPosts.length === 0) fetchSavedPosts();
-  }, [activeTab]);
+    if (userId) {
+      fetchData();
+      fetchPosts();
+    }
+  }, [userId]);
 
   useEffect(() => {
     imageObserver.current = new IntersectionObserver(
@@ -231,12 +218,6 @@ const Profile = () => {
     return `https://instagram-api.softclub.tj/images/${imagePath}`;
   };
 
-  const getAvatarUrl = (imagePath: any) => {
-    if (!imagePath || imagePath === "null" || imagePath === "undefined")
-      return "https://via.placeholder.com/150?text=Avatar";
-    return `https://instagram-api.softclub.tj/images/${imagePath}`;
-  };
-
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -255,25 +236,21 @@ const Profile = () => {
     try {
       setLoading(true);
       const res = await fetch(
-        "https://instagram-api.softclub.tj/UserProfile/get-my-profile",
+        `https://instagram-api.softclub.tj/UserProfile/get-user-profile?userId=${userId}`,
         { headers: getAuthHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
       if (result?.data) {
         setData(result.data);
-        setEditedBio(result.data.about || "");
+        setIsFollowing(result.data.isFollowing || false);
       } else {
         throw new Error("No data in response");
       }
     } catch (err: any) {
       console.error(err);
       setError("Failed to load profile");
-      Toaster({
-        title: "Error",
-        description: "Не удалось загрузить профиль",
-        variant: "destructive",
-      });
+      toast.error("Не удалось загрузить профиль");
     } finally {
       setLoading(false);
     }
@@ -283,7 +260,7 @@ const Profile = () => {
     try {
       setLoadingPosts(true);
       const res = await fetch(
-        "https://instagram-api.softclub.tj/Post/get-my-posts",
+        `https://instagram-api.softclub.tj/Post/get-user-posts?userId=${userId}`,
         { headers: getAuthHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -291,39 +268,10 @@ const Profile = () => {
       setPosts(Array.isArray(result) ? result : result?.data || []);
     } catch (err) {
       console.error(err);
-      Toaster({
-        title: "Error",
-        description: "Не удалось загрузить посты",
-        variant: "destructive",
-      });
+      toast.error("Не удалось загрузить посты");
       setPosts([]);
     } finally {
       setLoadingPosts(false);
-    }
-  };
-
-  const fetchSavedPosts = async () => {
-    try {
-      setLoadingSaved(true);
-      const url = new URL(
-        "https://instagram-api.softclub.tj/UserProfile/get-post-favorites",
-      );
-      url.searchParams.append("PageNumber", "1");
-      url.searchParams.append("PageSize", "50");
-      const res = await fetch(url.toString(), { headers: getAuthHeader() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const result = await res.json();
-      setSavedPosts(Array.isArray(result?.data) ? result.data : []);
-    } catch (err) {
-      console.error(err);
-      Toaster({
-        title: "Error",
-        description: "Не удалось загрузить сохранённые посты",
-        variant: "destructive",
-      });
-      setSavedPosts([]);
-    } finally {
-      setLoadingSaved(false);
     }
   };
 
@@ -339,77 +287,49 @@ const Profile = () => {
       setFullPostData(result?.data || result || null);
     } catch (err) {
       console.error(err);
-      Toaster({
-        title: "Error",
-        description: "Не удалось загрузить пост",
-        variant: "destructive",
-      });
+      toast.error("Не удалось загрузить пост");
     } finally {
       setLoadingFullPost(false);
     }
   };
 
-  const handleAddPost = async () => {
-    if (!title.trim() || !content.trim()) {
-      Toaster({
-        title: "Error",
-        description: "Заполните заголовок и описание",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (images.length === 0) {
-      Toaster({
-        title: "Error",
-        description: "Выберите хотя бы одно фото/видео",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploading(true);
+  const handleFollowToggle = async () => {
+    setFollowLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-      images.forEach((image) => formData.append("images", image));
 
-      const res = await fetch(
-        "https://instagram-api.softclub.tj/Post/add-post",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        },
-      );
-
-      if (!res.ok) throw new Error("Failed to add post");
-      Toaster({
-        title: "Success",
-        description: "Пост добавлен",
-      });
-      setModalAdd(false);
-      setTitle("");
-      setContent("");
-      setImages([]);
-      await fetchPosts();
+      if (isFollowing) {
+        // Unsubscribe
+        const res = await fetch(
+          `https://instagram-api.softclub.tj/FollowingRelationShip/delete-following-relation-ship?followingUserId=${userId}`,
+          {
+            method: "DELETE",
+            headers: getAuthHeader(),
+          },
+        );
+        if (!res.ok) throw new Error("Failed to unfollow");
+        toast.success("Вы отписались от пользователя");
+        setIsFollowing(false);
+      } else {
+        // Subscribe
+        const res = await fetch(
+          `https://instagram-api.softclub.tj/FollowingRelationShip/add-following-relation-ship?followingUserId=${userId}`,
+          {
+            method: "POST",
+            headers: getAuthHeader(),
+          },
+        );
+        if (!res.ok) throw new Error("Failed to follow");
+        toast.success("Вы подписались на пользователя");
+        setIsFollowing(true);
+      }
+      await fetchData();
     } catch (err: any) {
-      Toaster({
-        title: "Error",
-        description: err.message || "Ошибка при добавлении поста",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Ошибка при изменении подписки");
     } finally {
-      setUploading(false);
-      fetchPosts();
+      setFollowLoading(false);
     }
-  };
-
-  const handleDeletePost = async (postId: any) => {
-    setPostToDelete(postId);
-    setDeletePostAlertOpen(true);
   };
 
   const handleLikePost = async (postId: number) => {
@@ -424,11 +344,7 @@ const Profile = () => {
       if (!res.ok) throw new Error("Failed to like");
       await fetchFullPostData(postId);
     } catch (err) {
-      Toaster({
-        title: "Error",
-        description: "Не удалось поставить лайк",
-        variant: "destructive",
-      });
+      toast.error("Не удалось поставить лайк");
     }
   };
 
@@ -444,16 +360,9 @@ const Profile = () => {
       );
       if (!res.ok) throw new Error("Failed to favorite");
       await fetchFullPostData(postId);
-      Toaster({
-        title: "Success",
-        description: "Добавлено в избранное",
-      });
+      toast.success("Добавлено в избранное");
     } catch (err) {
-      Toaster({
-        title: "Error",
-        description: "Не удалось добавить в избранное",
-        variant: "destructive",
-      });
+      toast.error("Не удалось добавить в избранное");
     }
   };
 
@@ -471,16 +380,9 @@ const Profile = () => {
       );
       if (!res.ok) throw new Error("Failed to add comment");
       setNewComment("");
-      Toaster({
-        title: "Success",
-        description: "Комментарий добавлен",
-      });
+      toast.success("Комментарий добавлен");
     } catch (err: any) {
-      Toaster({
-        title: "Error",
-        description: err.message || "Ошибка добавления комментария",
-        variant: "destructive",
-      });
+      toast.error(err.message || "Ошибка добавления комментария");
     } finally {
       setSubmittingComment(false);
       fetchFullPostData(postId);
@@ -498,16 +400,9 @@ const Profile = () => {
       );
       if (!res.ok) throw new Error("Failed to delete comment");
       if (fullPostData?.postId) await fetchPosts();
-      Toaster({
-        title: "Success",
-        description: "Комментарий удалён",
-      });
+      toast.success("Комментарий удалён");
     } catch (err: any) {
-      Toaster({
-        title: "Error",
-        description: "Не удалось удалить комментарий",
-        variant: "destructive",
-      });
+      toast.error("Не удалось удалить комментарий");
     }
   };
 
@@ -523,68 +418,6 @@ const Profile = () => {
     } catch (err) {
       console.error("View error:", err);
     }
-  };
-
-  const handleBioSave = async () => {
-    try {
-      const res = await fetch(
-        "https://instagram-api.softclub.tj/UserProfile/update-user-profile",
-        {
-          method: "PUT",
-          headers: { ...getAuthHeader(), "Content-Type": "application/json" },
-          body: JSON.stringify({ about: editedBio, gender: 0 }),
-        },
-      );
-      if (!res.ok) throw new Error("Failed to update bio");
-      Toaster({
-        title: "Success",
-        description: "Профиль обновлён",
-      });
-      setIsEditing(false);
-      await fetchData();
-    } catch (err: any) {
-      Toaster({
-        title: "Error",
-        description: err.message || "Ошибка обновления профиля",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleAvatarUpload = async (file: File) => {
-    setUploadingAvatar(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token");
-      const formData = new FormData();
-      formData.append("imageFile", file);
-      const res = await fetch(
-        "https://instagram-api.softclub.tj/UserProfile/update-user-image-profile",
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        },
-      );
-      if (!res.ok) throw new Error("Failed to upload avatar");
-      Toaster({
-        title: "Success",
-        description: "Аватар обновлён",
-      });
-      await fetchData();
-    } catch (err: any) {
-      Toaster({
-        title: "Error",
-        description: err.message || "Ошибка загрузки аватара",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
-
-  const handleAvatarDelete = async () => {
-    setDeleteAvatarAlertOpen(true);
   };
 
   const openPostModal = async (post: Post) => {
@@ -621,7 +454,7 @@ const Profile = () => {
     }
   };
 
-  const renderPostsGrid = (postsToRender: Post[], showAddButton = true) => (
+  const renderPostsGrid = (postsToRender: Post[]) => (
     <div className="grid grid-cols-3 gap-1 sm:gap-2 md:gap-3">
       {postsToRender.map((post) => (
         <div
@@ -636,8 +469,8 @@ const Profile = () => {
               className="w-full h-full object-cover"
               loading="lazy"
               onError={(e) =>
-              (e.currentTarget.src =
-                "https://via.placeholder.com/400?text=Post+Image")
+                (e.currentTarget.src =
+                  "https://via.placeholder.com/400?text=Post+Image")
               }
               ref={(el) => {
                 if (
@@ -678,17 +511,6 @@ const Profile = () => {
           )}
         </div>
       ))}
-      {showAddButton && (
-        <div
-          onClick={() => setModalAdd(true)}
-          className="aspect-square bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer flex flex-col items-center justify-center gap-2 border border-gray-800 rounded-lg"
-        >
-          <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center hover:border-gray-400 transition-colors">
-            <FaPlus className="text-2xl text-gray-400" />
-          </div>
-          <p className="text-sm text-gray-400 font-medium">New Post</p>
-        </div>
-      )}
     </div>
   );
 
@@ -717,12 +539,6 @@ const Profile = () => {
             {data?.userName || "Profile"}
           </h1>
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setModalAdd(true)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <FaPlus className="text-lg" />
-            </button>
             <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
               <FiShare2 className="text-lg" />
             </button>
@@ -736,7 +552,7 @@ const Profile = () => {
       <div className="max-w-[935px] mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row gap-8 md:gap-16 mb-10">
           <div className="flex flex-col items-center md:items-start">
-            <div className="relative group">
+            <div className="relative">
               <div className="w-28 h-28 md:w-36 md:h-36 rounded-full p-0.5 bg-gradient-to-r from-purple-500 to-pink-500">
                 <Avatar className="w-full h-full">
                   <AvatarImage
@@ -747,38 +563,6 @@ const Profile = () => {
                     <User className="h-12 w-12" />
                   </AvatarFallback>
                 </Avatar>
-                {uploadingAvatar && (
-                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                    <Loader2 className="text-white text-2xl animate-spin" />
-                  </div>
-                )}
-              </div>
-              <div className="absolute bottom-2 right-2 flex gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id="avatar-upload"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                      handleAvatarUpload(e.target.files[0]);
-                    }
-                  }}
-                />
-                <label
-                  htmlFor="avatar-upload"
-                  className="bg-gray-800 p-2 rounded-full hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                >
-                  <FaCamera className="text-sm" />
-                </label>
-                {data?.image && (
-                  <button
-                    onClick={handleAvatarDelete}
-                    className="bg-red-600 p-2 rounded-full hover:bg-red-700 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <FaTimes className="text-sm" />
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -789,14 +573,29 @@ const Profile = () => {
                 {data?.userName || "User"}
               </h1>
               <div className="flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                <Button
+                  onClick={handleFollowToggle}
+                  disabled={followLoading}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+                    isFollowing
+                      ? "bg-gray-800 hover:bg-gray-700"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
-                  <FaEdit /> Edit Profile
-                </button>
-                <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
-                  <FaArchive /> View Archive
+                  {followLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isFollowing ? (
+                    <>
+                      <FaUserCheck /> Following
+                    </>
+                  ) : (
+                    <>
+                      <FaUserPlus /> Follow
+                    </>
+                  )}
+                </Button>
+                <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-sm transition-colors">
+                  Message
                 </button>
               </div>
             </div>
@@ -830,36 +629,9 @@ const Profile = () => {
               <div className="font-semibold">
                 {data?.fullName || data?.userName || "User"}
               </div>
-              {isEditing ? (
-                <div className="space-y-3">
-                  <Textarea
-                    value={editedBio}
-                    onChange={(e) => setEditedBio(e.target.value)}
-                    className="w-full bg-gray-900 border-gray-700 text-white"
-                    rows={3}
-                    placeholder="Tell your story..."
-                  />
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={handleBioSave}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      onClick={() => setIsEditing(false)}
-                      variant="outline"
-                      className="bg-gray-800 hover:bg-gray-700 border-gray-700"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {data?.about || "No bio yet. Tell your story..."}
-                </p>
-              )}
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {data?.about || "No bio yet."}
+              </p>
               {data?.website && (
                 <Link
                   href={data.website}
@@ -881,12 +653,6 @@ const Profile = () => {
               <MdGridOn size={30} />
             </button>
             <button
-              onClick={() => setActiveTab("saved")}
-              className={`flex items-center gap-2 py-4 border-t ${activeTab === "saved" ? "border-white text-white" : "border-transparent text-gray-400"} transition-all`}
-            >
-              <MdPlayArrow size={30} />
-            </button>
-            <button
               onClick={() => setActiveTab("tagged")}
               className={`flex items-center gap-2 py-4 border-t ${activeTab === "tagged" ? "border-white text-white" : "border-transparent text-gray-400"} transition-all`}
             >
@@ -902,7 +668,7 @@ const Profile = () => {
                 <Skeleton className="h-8 w-8 rounded-full" />
               </div>
             ) : posts.length > 0 ? (
-              renderPostsGrid(posts, true)
+              renderPostsGrid(posts)
             ) : (
               <div className="min-h-[40vh] flex flex-col items-center justify-center text-center">
                 <div className="w-24 h-24 rounded-full border-2 border-gray-800 flex items-center justify-center mb-6">
@@ -910,33 +676,7 @@ const Profile = () => {
                 </div>
                 <h3 className="text-2xl font-light mb-2">No Posts Yet</h3>
                 <p className="text-gray-400 max-w-md">
-                  When you share photos or videos, they'll appear on your
-                  profile.
-                </p>
-                <Button
-                  onClick={() => setModalAdd(true)}
-                  className="mt-6 bg-blue-600 hover:bg-blue-700"
-                >
-                  Share your first post
-                </Button>
-              </div>
-            ))}
-
-          {activeTab === "saved" &&
-            (loadingSaved ? (
-              <div className="min-h-[40vh] flex items-center justify-center">
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </div>
-            ) : savedPosts.length > 0 ? (
-              renderPostsGrid(savedPosts, false)
-            ) : (
-              <div className="min-h-[40vh] flex flex-col items-center justify-center text-center">
-                <div className="w-24 h-24 rounded-full border-2 border-gray-800 flex items-center justify-center mb-6">
-                  <FaBookmark className="text-4xl text-gray-600" />
-                </div>
-                <h3 className="text-2xl font-light mb-2">No Saved Posts</h3>
-                <p className="text-gray-400 max-w-md">
-                  Save photos and videos that you want to see again.
+                  When this user shares photos or videos, they'll appear here.
                 </p>
               </div>
             ))}
@@ -949,7 +689,7 @@ const Profile = () => {
                 </div>
                 <h3 className="text-2xl font-light mb-2">No Tagged Posts</h3>
                 <p className="text-gray-400 max-w-md">
-                  Photos and videos you're tagged in will appear here.
+                  Photos and videos this user is tagged in will appear here.
                 </p>
               </div>
             </div>
@@ -957,205 +697,13 @@ const Profile = () => {
         </div>
       </div>
 
-      <Dialog open={modalAdd} onOpenChange={setModalAdd}>
-        <DialogContent className="sm:max-w-[600px] bg-black border-gray-800">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-white">Create New Post</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Share your moments with the world
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-white">Title</Label>
-              <Input
-                id="title"
-                placeholder="What's this post about?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="bg-gray-900 border-gray-700 text-white"
-                disabled={uploading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="content" className="text-white">Content</Label>
-              <Textarea
-                id="content"
-                placeholder="Tell your story..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
-                className="bg-gray-900 border-gray-700 text-white"
-                disabled={uploading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-white">Images/Videos</Label>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragActive
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-gray-700 hover:border-gray-600"
-                  }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-gray-400">
-                  {isDragActive
-                    ? "Drop files here..."
-                    : "Drag & drop files or click to select"}
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Supports images and videos
-                </p>
-              </div>
-              {images.length > 0 && (
-                <div className="text-sm text-gray-400 mt-2">
-                  Selected: {images.length} file(s)
-                </div>
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setModalAdd(false);
-                setTitle("");
-                setContent("");
-                setImages([]);
-              }}
-              disabled={uploading}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddPost}
-              disabled={uploading || !title.trim() || !content.trim() || images.length === 0}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                "Post"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={deletePostAlertOpen} onOpenChange={setDeletePostAlertOpen}>
-        <AlertDialogContent className="bg-black border-gray-800">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Post</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              Are you sure you want to delete this post? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-gray-700 text-gray-300 hover:bg-gray-800">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (!postToDelete) return;
-                try {
-                  const token = localStorage.getItem("token");
-                  if (!token) throw new Error("No token found");
-                  const res = await fetch(
-                    `https://instagram-api.softclub.tj/Post/delete-post?id=${postToDelete}`,
-                    {
-                      method: "DELETE",
-                      headers: { Authorization: `Bearer ${token}` },
-                    }
-                  );
-                  if (!res.ok) throw new Error("Failed to delete post");
-                  Toaster({
-                    title: "Success",
-                    description: "Post deleted",
-                  });
-                  setPosts(posts.filter((p) => p.postId !== postToDelete));
-                  setSavedPosts(savedPosts.filter((p) => p.postId !== postToDelete));
-                  if (
-                    isPostModalOpen &&
-                    (selectedPost?.postId === postToDelete || fullPostData?.postId === postToDelete)
-                  ) {
-                    setIsPostModalOpen(false);
-                    setSelectedPost(null);
-                    setFullPostData(null);
-                  }
-                } catch (err: any) {
-                  Toaster({
-                    title: "Error",
-                    description: err.message || "Failed to delete post",
-                    variant: "destructive",
-                  });
-                } finally {
-                  setPostToDelete(null);
-                }
-              }}
-              className="bg-red-600 text-white hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={deleteAvatarAlertOpen} onOpenChange={setDeleteAvatarAlertOpen}>
-        <AlertDialogContent className="bg-black border-gray-800">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Avatar</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              Are you sure you want to delete your avatar image?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-gray-700 text-gray-300 hover:bg-gray-800">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                try {
-                  const res = await fetch(
-                    "https://instagram-api.softclub.tj/UserProfile/delete-user-image-profile",
-                    {
-                      method: "DELETE",
-                      headers: getAuthHeader(),
-                    }
-                  );
-                  if (!res.ok) throw new Error("Failed to delete avatar");
-                  Toaster({
-                    title: "Success",
-                    description: "Avatar deleted",
-                  });
-                  await fetchData();
-                } catch (err: any) {
-                  Toaster({
-                    title: "Error",
-                    description: err.message || "Failed to delete avatar",
-                    variant: "destructive",
-                  });
-                }
-              }}
-              className="bg-red-600 text-white hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <Dialog open={isPostModalOpen} onOpenChange={setIsPostModalOpen}>
-        <DialogContent className="max-w-6xl h-[90vh] p-0 bg-black border-none">
-          <div className="flex h-full">
-            <div className="flex-1 relative bg-black flex items-center justify-center">
+        <DialogContent className="max-w-6xl m-auto h-[90vh] p-0 bg-black border-none [&>button]:hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Post Details</DialogTitle>
+          </DialogHeader>
+          <div className="flex h-full justify-center">
+            <div className="flex-1 relative w-125 bg-black flex items-center justify-center">
               <Button
                 variant="ghost"
                 size="icon"
@@ -1164,17 +712,6 @@ const Profile = () => {
               >
                 <FaTimes className="h-5 w-5" />
               </Button>
-
-              {selectedPost?.userId === data?.userId && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-4 right-4 z-10 bg-red-600/80 hover:bg-red-700 text-white"
-                  onClick={() => handleDeletePost(selectedPost?.postId)}
-                >
-                  <FaTrash className="h-5 w-5" />
-                </Button>
-              )}
 
               {selectedPost?.images && selectedPost.images.length > 1 && (
                 <>
@@ -1211,7 +748,9 @@ const Profile = () => {
                 </div>
               ) : (
                 <>
-                  {selectedPost?.images?.[currentImageIndex]?.endsWith(".mp4") ? (
+                  {selectedPost?.images?.[currentImageIndex]?.endsWith(
+                    ".mp4",
+                  ) ? (
                     <video
                       src={getImageUrl(selectedPost.images[currentImageIndex])}
                       controls
@@ -1221,9 +760,11 @@ const Profile = () => {
                     />
                   ) : (
                     <img
-                      src={getImageUrl(selectedPost?.images?.[currentImageIndex])}
+                      src={getImageUrl(
+                        selectedPost?.images?.[currentImageIndex],
+                      )}
                       alt={selectedPost?.title || "Post"}
-                      className="max-h-full max-w-full object-contain"
+                      className="w-122 object-contain"
                     />
                   )}
                 </>
@@ -1242,7 +783,9 @@ const Profile = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-semibold text-white">{selectedPost?.userName}</div>
+                  <div className="font-semibold text-white">
+                    {selectedPost?.userName}
+                  </div>
                   <div className="text-sm text-gray-400">
                     {formatDate(selectedPost?.datePublished || "")}
                   </div>
@@ -1251,7 +794,9 @@ const Profile = () => {
 
               <ScrollArea className="flex-1 p-4">
                 <div className="mb-4">
-                  <h3 className="font-bold text-lg mb-2 text-white">{selectedPost?.title}</h3>
+                  <h3 className="font-bold text-lg mb-2 text-white">
+                    {selectedPost?.title}
+                  </h3>
                   <p className="text-gray-300 whitespace-pre-line">
                     {selectedPost?.content}
                   </p>
@@ -1265,7 +810,9 @@ const Profile = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleLikePost(selectedPost?.postId || 0)}
+                        onClick={() =>
+                          handleLikePost(selectedPost?.postId || 0)
+                        }
                         className="text-white hover:bg-gray-800"
                       >
                         {selectedPost?.postLike ? (
@@ -1274,15 +821,21 @@ const Profile = () => {
                           <FaRegHeart className="h-5 w-5" />
                         )}
                       </Button>
-                      <span className="text-white">{selectedPost?.postLikeCount || 0} likes</span>
+                      <span className="text-white">
+                        {selectedPost?.postLikeCount || 0} likes
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <FaComment className="h-5 w-5 text-gray-400" />
-                      <span className="text-white">{selectedPost?.commentCount || 0} comments</span>
+                      <span className="text-white">
+                        {selectedPost?.commentCount || 0} comments
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <FaEye className="h-5 w-5 text-gray-400" />
-                      <span className="text-white">{selectedPost?.postView || 0} views</span>
+                      <span className="text-white">
+                        {selectedPost?.postView || 0} views
+                      </span>
                     </div>
                   </div>
 
@@ -1294,38 +847,31 @@ const Profile = () => {
                       return comments.length > 0 ? (
                         <div className="space-y-4">
                           {comments.map((comment: any, i: number) => (
-                            <div key={comment.postCommentId || i} className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarImage
-                                      src={`https://instagram-api.softclub.tj/images/${comment.userImage}`}
-                                    />
-                                    <AvatarFallback>
-                                      {comment.userName?.[0]}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <div className="font-semibold text-sm text-white">
-                                      {comment.userName}
-                                    </div>
-                                    <div className="text-xs text-gray-400">
-                                      {formatDate(comment.dateCommented)}
-                                    </div>
+                            <div
+                              key={comment.postCommentId || i}
+                              className="space-y-2"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage
+                                    src={`https://instagram-api.softclub.tj/images/${comment.userImage}`}
+                                  />
+                                  <AvatarFallback>
+                                    {comment.userName?.[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="font-semibold text-sm text-white">
+                                    {comment.userName}
+                                  </div>
+                                  <div className="text-xs text-gray-400">
+                                    {formatDate(comment.dateCommented)}
                                   </div>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleDeleteComment(comment.postCommentId)
-                                  }
-                                  className="text-red-500 hover:text-red-400"
-                                >
-                                  Delete
-                                </Button>
                               </div>
-                              <p className="text-sm pl-10 text-gray-300">{comment.comment}</p>
+                              <p className="text-sm pl-10 text-gray-300">
+                                {comment.comment}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -1354,17 +900,27 @@ const Profile = () => {
                         <FaRegHeart className="h-5 w-5" />
                       )}
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-gray-800">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-gray-800"
+                    >
                       <FaComment className="h-5 w-5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-gray-800">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-gray-800"
+                    >
                       <FaShare className="h-5 w-5" />
                     </Button>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleAddToFavorites(selectedPost?.postId || 0)}
+                    onClick={() =>
+                      handleAddToFavorites(selectedPost?.postId || 0)
+                    }
                     className="text-white hover:bg-gray-800"
                   >
                     {selectedPost?.postFavorite ? (
@@ -1406,8 +962,228 @@ const Profile = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={followersModalOpen} onOpenChange={setFollowersModalOpen}>
+        <DialogContent className="sm:max-w-md bg-black border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">
+              {data?.userName || "User"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex border-b border-gray-800">
+            <button
+              onClick={() => {
+                setFollowersTab("followers");
+                fetchFollowers();
+              }}
+              className={`flex-1 py-3 font-semibold ${followersTab === "followers" ? "text-white border-b-2 border-white" : "text-gray-400"}`}
+            >
+              Followers
+            </button>
+            <button
+              onClick={() => {
+                setFollowersTab("following");
+                fetchFollowing();
+              }}
+              className={`flex-1 py-3 font-semibold ${followersTab === "following" ? "text-white border-b-2 border-white" : "text-gray-400"}`}
+            >
+              Following
+            </button>
+          </div>
+          <ScrollArea className="h-96">
+            {loadingFollowers || loadingFollowing ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin text-white" />
+              </div>
+            ) : followersTab === "followers" ? (
+              followers.length > 0 ? (
+                <div className="space-y-3">
+                  {followers.map((follower) => (
+                    <div
+                      key={follower.id}
+                      className="flex items-center justify-between p-3 hover:bg-gray-900 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage
+                            src={getAvatarUrl(
+                              follower.userShortInfo.userPhoto,
+                            )}
+                            alt={follower.userShortInfo.userName}
+                          />
+                          <AvatarFallback>
+                            {follower.userShortInfo.userName?.[0] || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold text-white">
+                            {follower.userShortInfo.userName}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            {follower.userShortInfo.fullname}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-32">
+                  <FaUserPlus className="h-12 w-12 text-gray-600 mb-3" />
+                  <p className="text-gray-400">No followers yet</p>
+                </div>
+              )
+            ) : following.length > 0 ? (
+              <div className="space-y-3">
+                {following.map((follow) => (
+                  <div
+                    key={follow.id}
+                    className="flex items-center justify-between p-3 hover:bg-gray-900 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage
+                          src={getAvatarUrl(follow.userShortInfo.userPhoto)}
+                          alt={follow.userShortInfo.userName}
+                        />
+                        <AvatarFallback>
+                          {follow.userShortInfo.userName?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-semibold text-white">
+                          {follow.userShortInfo.userName}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {follow.userShortInfo.fullname}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-32">
+                <FaUserPlus className="h-12 w-12 text-gray-600 mb-3" />
+                <p className="text-gray-400">Not following anyone yet</p>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={followingModalOpen} onOpenChange={setFollowingModalOpen}>
+        <DialogContent className="sm:max-w-md bg-black border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">
+              {data?.userName || "User"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex border-b border-gray-800">
+            <button
+              onClick={() => {
+                setFollowersTab("followers");
+                fetchFollowers();
+              }}
+              className={`flex-1 py-3 font-semibold ${followersTab === "followers" ? "text-white border-b-2 border-white" : "text-gray-400"}`}
+            >
+              Followers
+            </button>
+            <button
+              onClick={() => {
+                setFollowersTab("following");
+                fetchFollowing();
+              }}
+              className={`flex-1 py-3 font-semibold ${followersTab === "following" ? "text-white border-b-2 border-white" : "text-gray-400"}`}
+            >
+              Following
+            </button>
+          </div>
+          <ScrollArea className="h-96">
+            {loadingFollowers || loadingFollowing ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin text-white" />
+              </div>
+            ) : followersTab === "followers" ? (
+              followers.length > 0 ? (
+                <div className="space-y-3">
+                  {followers.map((follower) => (
+                    <div
+                      key={follower.id}
+                      className="flex items-center justify-between p-3 hover:bg-gray-900 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage
+                            src={getAvatarUrl(
+                              follower.userShortInfo.userPhoto,
+                            )}
+                            alt={follower.userShortInfo.userName}
+                          />
+                          <AvatarFallback>
+                            {follower.userShortInfo.userName?.[0] || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold text-white">
+                            {follower.userShortInfo.userName}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            {follower.userShortInfo.fullname}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-32">
+                  <FaUserPlus className="h-12 w-12 text-gray-600 mb-3" />
+                  <p className="text-gray-400">No followers yet</p>
+                </div>
+              )
+            ) : following.length > 0 ? (
+              <div className="space-y-3">
+                {following.map((follow) => (
+                  <div
+                    key={follow.id}
+                    className="flex items-center justify-between p-3 hover:bg-gray-900 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage
+                          src={getAvatarUrl(follow.userShortInfo.userPhoto)}
+                          alt={follow.userShortInfo.userName}
+                        />
+                        <AvatarFallback>
+                          {follow.userShortInfo.userName?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-semibold text-white">
+                          {follow.userShortInfo.userName}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {follow.userShortInfo.fullname}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-32">
+                <FaUserPlus className="h-12 w-12 text-gray-600 mb-3" />
+                <p className="text-gray-400">Not following anyone yet</p>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      <Toaster />
     </div>
   );
 };
 
-export default Profile;
+export default ProfileById;
