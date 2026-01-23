@@ -17,11 +17,3 @@ export const getReels = createAsyncThunk<any[], void, { rejectValue: string }>(
     }
   },
 );
-export const Postlike = createAsyncThunk('reels/getPost', async (id, { dispatch }) => {
-    try {
-        await axiosRequest.post(`/Post/like-post?postId=${id}`);
-        dispatch(getReels());
-    } catch (error) {
-        console.error(error);
-    }
-});

@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from './../../lib/store'
-import { CreateChat, DeleteChatById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from '../../lib/features/messages/ApiMessages'
-import { Bell, EllipsisVertical, ImageDown, Info, Mic, Phone, Reply, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+import { CreateChat, DeleteChatById, DeleteMessagesById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from '../../lib/features/messages/ApiMessages'
+import { Bell, Copy, EllipsisVertical, ImageDown, Info, MessageSquareWarning, Mic, Phone, Reply, Search, Send, Smile, SquarePen, Trash2, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from "../Muhsin-s-Img/user-icons-includes-user-icons-people-icons-symbols-premiumquality-graphic-design-elements_981536-526.avif"
 import Link from 'next/link'
@@ -23,8 +23,17 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { Switch } from '@/components/ui/switch'
-import EmojiMessages from '@/components/EmojiMessages'
 import ChatInput from '@/components/EmojiMessages'
+import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 function page() {
     const dispatch = useDispatch<AppDispatch>()
@@ -76,7 +85,7 @@ function page() {
                 message: messageText || "",
                 file: file
             })).unwrap();
-            
+
             setMessageText("");
             if (fileInputRef.current) fileInputRef.current.value = "";
 
@@ -278,7 +287,7 @@ function page() {
                                         const isMe = msg.userName === myprofile?.userName;
 
                                         return (
-                                            <div key={msg.messageId} msg={msg} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`} >
+                                            <div key={msg.messageId} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`} >
                                                 <div className='flex items-end gap-2'>
                                                     {!isMe && (
                                                         <Image
@@ -292,35 +301,89 @@ function page() {
 
                                                     <div key={msg.messageId} className={`flex items-center gap-2 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
 
-                                                        <div className={`px-3 py-1 rounded-2xl text-sm ${isMe ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-[#262626]'}`}>
-                                                            <p>{msg.messageText}</p>
-                                                            <span className={` text-[10px] opacity-70 block text-right`}>
-                                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                        </div>
+                                                        {
+                                                            msg.messageText && (
+                                                                <p className={`px-3 py-1 rounded-2xl text-sm ${isMe ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-[#262626]'}`}>{msg.messageText}</p>
+                                                            )
+                                                        }
 
                                                         {msg.file && (
-                                                            <div className="mb-2">
-                                                                <Image
-                                                                    src={`https://instagram-api.softclub.tj/images/${msg.file}`}
-                                                                    alt="sent image"
-                                                                    width={150}
-                                                                    height={150}
-                                                                    className="rounded-lg object-cover w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                                                                />
+                                                            <div className="mb-2 max-w-[200px]">
+                                                                {msg.file.endsWith('.mp4') ? (
+                                                                    <video
+                                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                                        controls
+                                                                        className="rounded-lg w-full"
+                                                                    />
+                                                                ) : (
+                                                                    <Image
+                                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                                        alt="sent file"
+                                                                        width={200}
+                                                                        height={200}
+                                                                        unoptimized
+                                                                        className="rounded-lg object-cover w-full h-auto cursor-pointer"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
 
                                                         {!isMe && (
                                                             <div className="opacity-0 flex gap-1 items-center group-hover:opacity-100 transition-opacity cursor-pointer text-gray-500 ">
                                                                 <Reply className='hover:text-blue-500' size={20} />
-                                                                <EllipsisVertical className='hover:text-blue-500' size={20} />
+
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <EllipsisVertical className='hover:text-blue-500' size={20} />
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuLabel><span className={` text-[14px] opacity-70 block `}>
+                                                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                            </span></DropdownMenuLabel>
+                                                                            <DropdownMenuItem onClick={() => dispatch(DeleteMessagesById(msg.messageId))} className='flex justify-between text-red-600'>Delete <Trash2 className='text-red-600' /></DropdownMenuItem>
+                                                                            <DropdownMenuItem className='flex justify-between '>Copy <Copy /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className='flex justify-between text-red-600'>Report <MessageSquareWarning className='text-red-600' /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
                                                             </div>
                                                         )}
                                                         {isMe && (
                                                             <div className="opacity-0 flex gap-1 items-center group-hover:opacity-100 transition-opacity cursor-pointer text-gray-500 ">
                                                                 <Reply className='hover:text-blue-500' size={20} />
-                                                                <EllipsisVertical className='hover:text-blue-500' size={20} />
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <EllipsisVertical className='hover:text-blue-500' size={20} />
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuLabel><span className={` text-[14px] opacity-70 block `}>
+                                                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                            </span></DropdownMenuLabel>
+                                                                            <DropdownMenuItem onClick={() => {
+                                                                                if (msg?.messageId) {
+                                                                                    dispatch(DeleteMessagesById(msg.messageId))
+                                                                                        .unwrap()
+                                                                                        .then(() => {
+                                                                                            if (selectedChat?.chatId) {
+                                                                                                dispatch(getChatById(selectedChat.chatId));
+                                                                                            }
+                                                                                        });
+                                                                                }
+                                                                            }} className='flex justify-between text-red-600'>Delete <Trash2 size={16} />
+                                                                            </DropdownMenuItem>
+                                                                            <DropdownMenuItem className='flex justify-between '>Copy <Copy /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className='flex justify-between text-red-600'>Report <MessageSquareWarning className='text-red-600' /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
                                                             </div>
                                                         )}
                                                     </div>
