@@ -24,7 +24,7 @@ const Page = () => {
 
   const { register, handleSubmit } = useForm<IFormInput>();
 
-  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+  const onSubmit: SubmitHandler<IFormInput> = async (data:any) => {
     const resultAction = await dispatch(loginUser(data));
 
     if (loginUser.fulfilled.match(resultAction)) {
