@@ -61,7 +61,7 @@ export function Sidebar() {
   if (token) {
     try {
       decoded = jwtDecode(token);
-      profileImage = decoded?.sub || null; // use "sub" key as image URL
+      profileImage = decoded?.sub || null; 
     } catch (err) {
       console.error("Invalid token", err);
     }
@@ -90,7 +90,6 @@ export function Sidebar() {
       className="h-screen border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0"
     >
       <div className="flex h-full flex-col justify-between px-3 py-4">
-        {/* Logo */}
         <div className="mb-10 flex items-center gap-3 px-2">
           <AnimatePresence mode="wait">
             {showText ? (
@@ -119,7 +118,6 @@ export function Sidebar() {
           </AnimatePresence>
         </div>
 
-        {/* Navigation */}
         <nav className="flex flex-col gap-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
@@ -139,7 +137,6 @@ export function Sidebar() {
                   <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-black dark:bg-white" />
                 )}
 
-                {/* Profile image from token */}
                 {href === "/profile" && profileImage ? (
                   <img
                     src={profileImage}
@@ -156,7 +153,6 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Footer / More menu */}
         <div className="mt-6 flex flex-col gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
