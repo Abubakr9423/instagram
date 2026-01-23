@@ -27,8 +27,16 @@ export const DeleteChatById = createAsyncThunk("auth/DeleteChatById", async (cha
     } catch (error: any) {
         console.error(error);
     }
-}
-);
+});
+export const DeleteMessagesById = createAsyncThunk("auth/DeleteMessagesById", async (MessId, { dispatch }) => {
+    try {
+        await axiosRequest.delete(`/Chat/delete-message?massageId=${MessId}`);
+        dispatch(getChatById())
+        return MessId
+    } catch (error: any) {
+        console.error(error);
+    }
+});
 export const GetUsers = createAsyncThunk("auth/GetUsers", async (searchTerm: string = "") => {
     try {
         const response = await axiosRequest.get(`/User/get-users?userName=${searchTerm}`);
