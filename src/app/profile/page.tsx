@@ -145,10 +145,14 @@ const Profile = () => {
     multiple: true,
   });
 
-  const jwtToken = localStorage.getItem("token") || "";
-  const jwtDecoded: any = jwtDecode(jwtToken);
-  const userId = jwtDecoded.sid;
-
+  let jwtToken:any
+  let jwtDecoded:any
+  let userId :any
+  function getID() {
+    jwtToken = localStorage.getItem("token") || "";
+    jwtDecoded = jwtDecode(jwtToken);
+    userId = jwtDecoded.sid;
+  }
   const getAuthHeader = () => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token found");
@@ -217,6 +221,7 @@ const Profile = () => {
   useEffect(() => {
     fetchData();
     fetchPosts();
+    getID()
   }, []);
 
   useEffect(() => {
