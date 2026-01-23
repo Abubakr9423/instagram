@@ -307,7 +307,6 @@ function page() {
                                                             )
                                                         }
 
-
                                                         {msg.file && (
                                                             <div className="mb-2">
                                                                 <Image
