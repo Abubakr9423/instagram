@@ -1,9 +1,9 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from './../../lib/store'
-import { CreateChat, DeleteChatById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from '../../lib/features/messages/ApiMessages'
-import { Bell, ImageDown, Info, Mic, Phone, Search, Send, Smile, SquarePen, Video } from 'lucide-react'
+import { CreateChat, DeleteChatById, DeleteMessagesById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from '../../lib/features/messages/ApiMessages'
+import { Bell, Copy, EllipsisVertical, ImageDown, Info, MessageSquareWarning, Mic, Phone, Reply, Search, Send, Smile, SquarePen, Trash2, Video } from 'lucide-react'
 import Image from 'next/image'
 import img from "../Muhsin-s-Img/user-icons-includes-user-icons-people-icons-symbols-premiumquality-graphic-design-elements_981536-526.avif"
 import Link from 'next/link'
@@ -23,6 +23,17 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { Switch } from '@/components/ui/switch'
+import ChatInput from '@/components/EmojiMessages'
+import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 function page() {
     const dispatch = useDispatch<AppDispatch>()
@@ -63,17 +74,21 @@ function page() {
     };
 
     const [messageText, setMessageText] = useState("");
+    const [searchUsersChat, setSearchUsersChat] = useState("");
 
-    const handleSendMessage = async () => {
-        if (!messageText.trim() || !selectedChat?.chatId) return;
+    const handleSendMessage = async (file?: File) => {
+        if (!messageText.trim() && !file && !selectedChat?.chatId) return;
 
         try {
             await dispatch(SendMessage({
                 chatId: selectedChat.chatId.toString(),
-                message: messageText
+                message: messageText || "",
+                file: file
             })).unwrap();
 
             setMessageText("");
+            if (fileInputRef.current) fileInputRef.current.value = "";
+
             dispatch(Getchats());
         } catch (err) {
             console.error("Failed to send:", err);
@@ -84,6 +99,15 @@ function page() {
         dispatch(GetMyProfile());
     }, [dispatch]);
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleIconClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleEmojiSelect = (emoji) => {
+        setMessageText((prev) => prev + emoji);
+    };
 
     return (
         <div>
@@ -142,7 +166,7 @@ function page() {
                         </div>
                         <div className='flex items-center relative'>
                             <Search className='absolute left-3 text-gray-500' />
-                            <input className='bg-gray-100 dark:bg-[#1a1a1a] py-2 w-full pl-12 pr-3 rounded-2xl' placeholder='Search' type="search" />
+                            <input value={searchUsersChat} onChange={(e) => setSearchUsersChat(e.target.value)} className='bg-gray-100 dark:bg-[#1a1a1a] py-2 w-full pl-12 pr-3 rounded-2xl' placeholder='Search' type="search" />
                         </div>
                         <div className="relative flex flex-col items-center w-24 mt-5 mb-2">
                             <textarea
@@ -167,24 +191,24 @@ function page() {
                             <p className='text-gray-500 '>Requests</p>
                         </div>
                         <div className='overflow-y-auto flex flex-col h-112.5 '>
-                            {loading && <div className="h-screen flex justify-center items-center"><div className="w-12 h-12 border-4 border-transparent  border-t-gray-700 rounded-full animate-spin" /></div>}
+                            {/* {loading && <div className="h-screen flex justify-center items-center"><div className="w-12 h-12 border-4 border-transparent  border-t-gray-700 rounded-full animate-spin" /></div>} */}
 
                             {chats?.length > 0 && (
-                                chats.map((chat: any) => (
-                                    <div key={chat.chatId} onClick={() => handleChatClick(chat)} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
-                                        <Image
-                                            className='w-11 h-11 rounded-full object-cover'
-                                            src={chat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${chat.receiveUserImage}` : img}
-                                            alt="user"
-                                            width={44}
-                                            height={44}
-                                        />
-                                        <div className='text-sm overflow-hidden'>
-                                            <h1 className='font-bold truncate'>{chat.receiveUserName}</h1>
-                                            <p className='text-gray-500 truncate'>{chat.lastMessage}</p>
+                                chats.filter((e) => e.receiveUserName.toLowerCase().includes(searchUsersChat.toLowerCase()))
+                                    .map((chat: any) => (
+                                        <div key={chat.chatId} onClick={() => handleChatClick(chat)} className='flex gap-2 items-center hover:bg-gray-100 dark:hover:bg-[#1a1a1a] py-2 px-1 rounded-sm duration-300 cursor-pointer'>
+                                            <Image
+                                                className='w-15 h-15 rounded-full object-cover'
+                                                src={chat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${myprofile?.image == chat.receiveUserImage ? chat.sendUserImage : chat.receiveUserImage}` : img}
+                                                alt={myprofile?.userName == chat.sendUserName ? chat.receiveUserName : chat.sendUserName}
+                                                width={50}
+                                                height={50}
+                                            />
+                                            <div className='text-sm overflow-hidden'>
+                                                <h1 className='font-bold truncate'>{myprofile?.userName == chat.sendUserName ? chat.receiveUserName : chat.sendUserName}</h1>
+                                            </div>
                                         </div>
-                                    </div>
-                                )))
+                                    )))
                             }
                         </div>
                     </div>
@@ -195,12 +219,12 @@ function page() {
                             <div className='flex px-3 py-2 border-b justify-between items-center'>
                                 <div className='flex gap-2 items-center'>
                                     <Image
-                                        className='w-11 h-11 rounded-full'
-                                        src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
-                                        alt="" width={44} height={44}
+                                        className='w-11 h-11 rounded-full object-cover'
+                                        src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${myprofile?.image == selectedChat.receiveUserImage ? selectedChat.sendUserImage : selectedChat.receiveUserImage}` : img}
+                                        alt="" width={40} height={40}
                                     />
                                     <div>
-                                        <h1 className='font-bold'>{selectedChat.receiveUserName}</h1>
+                                        <h1 className='font-bold'>{myprofile?.userName == selectedChat.sendUserName ? selectedChat.receiveUserName : selectedChat.sendUserName}</h1>
                                         <p className='text-xs text-gray-500'>Active now</p>
                                     </div>
                                 </div>
@@ -222,11 +246,11 @@ function page() {
                                                             <div className='flex gap-2 items-center'>
                                                                 <Image
                                                                     className='w-11 h-11 rounded-full'
-                                                                    src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
+                                                                    src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${myprofile?.image == selectedChat.receiveUserImage ? selectedChat.sendUserImage : selectedChat.receiveUserImage}` : img}
                                                                     alt="" width={44} height={44}
                                                                 />
                                                                 <div>
-                                                                    <h1 className='font-bold'>{selectedChat.receiveUserName}</h1>
+                                                                    <h1 className='font-bold'>{myprofile?.userName == selectedChat.sendUserName ? selectedChat.receiveUserName : selectedChat.sendUserName}</h1>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -247,40 +271,126 @@ function page() {
 
                                 <div className='flex justify-center gap-1 items-center flex-col py-8'>
                                     <Image
-                                        className='rounded-full'
-                                        src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${selectedChat.receiveUserImage}` : img}
-                                        alt="" width={80} height={80}
+                                        className='w-25 h-25 rounded-full object-cover'
+                                        src={selectedChat.receiveUserImage ? `https://instagram-api.softclub.tj/images/${myprofile?.image == selectedChat.receiveUserImage ? selectedChat.sendUserImage : selectedChat.receiveUserImage}` : img}
+                                        alt=""
+                                        width={50}
+                                        height={50}
                                     />
-                                    <h1 className='text-2xl font-semibold'>{selectedChat.receiveUserName}</h1>
+                                    <h1 className='text-2xl font-semibold'>{myprofile?.userName == selectedChat.sendUserName ? selectedChat.receiveUserName : selectedChat.sendUserName}</h1>
                                     <p className='text-gray-400 mb-2'>Instagram</p>
                                     <button className='py-1 px-3 rounded-xl text-black bg-gray-200'>View profile</button>
                                 </div>
 
                                 <div className='flex flex-col gap-3'>
-                                    {
-                                        [...messages].reverse().map((msg: any) => (
-                                            <div
-                                                key={msg.messageId}
-                                                className={`max-w-[70%] p-3 rounded-2xl text-sm ${myprofile?.userName
-                                                    ? 'bg-blue-500 text-white self-end'
-                                                    : 'bg-gray-200 dark:bg-[#262626] self-start'
-                                                    }`}
-                                            >
-                                                <p>{msg.messageText}</p>
-                                                {msg.file ? (
-                                                    <Image
-                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
-                                                        alt="user image"
-                                                        width={200}
-                                                        height={200}
-                                                        className="rounded-lg mt-2 object-cover"
-                                                    />
-                                                ) : null}
-                                                <span className="text-[10px] opacity-70 block text-right">
-                                                    {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
+                                    {Array.isArray(messages) && [...messages].reverse().map((msg) => {
+                                        const isMe = msg.userName === myprofile?.userName;
+
+                                        return (
+                                            <div key={msg.messageId} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`} >
+                                                <div className='flex items-end gap-2'>
+                                                    {!isMe && (
+                                                        <Image
+                                                            width={10}
+                                                            height={10}
+                                                            className='w-8 h-8 rounded-full object-cover'
+                                                            src={msg.receiveUserImage ? `https://instagram-api.softclub.tj/images/${myprofile?.image == msg.receiveUserImage ? msg.sendUserImage : msg.receiveUserImage}` : img}
+                                                            alt=""
+                                                        />
+                                                    )}
+
+                                                    <div key={msg.messageId} className={`flex items-center gap-2 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+
+                                                        {
+                                                            msg.messageText && (
+                                                                <p className={`px-3 py-1 rounded-2xl text-sm ${isMe ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-[#262626]'}`}>{msg.messageText}</p>
+                                                            )
+                                                        }
+
+                                                        {msg.file && (
+                                                            <div className="mb-2 max-w-[200px]">
+                                                                {msg.file.endsWith('.mp4') ? (
+                                                                    <video
+                                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                                        controls
+                                                                        className="rounded-lg w-full"
+                                                                    />
+                                                                ) : (
+                                                                    <Image
+                                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                                        alt="sent file"
+                                                                        width={200}
+                                                                        height={200}
+                                                                        unoptimized
+                                                                        className="rounded-lg object-cover w-full h-auto cursor-pointer"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {!isMe && (
+                                                            <div className="opacity-0 flex gap-1 items-center group-hover:opacity-100 transition-opacity cursor-pointer text-gray-500 ">
+                                                                <Reply className='hover:text-blue-500' size={20} />
+
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <EllipsisVertical className='hover:text-blue-500' size={20} />
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuLabel><span className={` text-[14px] opacity-70 block `}>
+                                                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                            </span></DropdownMenuLabel>
+                                                                            <DropdownMenuItem onClick={() => dispatch(DeleteMessagesById(msg.messageId))} className='flex justify-between text-red-600'>Delete <Trash2 className='text-red-600' /></DropdownMenuItem>
+                                                                            <DropdownMenuItem className='flex justify-between '>Copy <Copy /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className='flex justify-between text-red-600'>Report <MessageSquareWarning className='text-red-600' /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
+                                                        )}
+                                                        {isMe && (
+                                                            <div className="opacity-0 flex gap-1 items-center group-hover:opacity-100 transition-opacity cursor-pointer text-gray-500 ">
+                                                                <Reply className='hover:text-blue-500' size={20} />
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <EllipsisVertical className='hover:text-blue-500' size={20} />
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuLabel><span className={` text-[14px] opacity-70 block `}>
+                                                                                {new Date(msg.sendMassageDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                            </span></DropdownMenuLabel>
+                                                                            <DropdownMenuItem onClick={() => {
+                                                                                if (msg?.messageId) {
+                                                                                    dispatch(DeleteMessagesById(msg.messageId))
+                                                                                        .unwrap()
+                                                                                        .then(() => {
+                                                                                            if (selectedChat?.chatId) {
+                                                                                                dispatch(getChatById(selectedChat.chatId));
+                                                                                            }
+                                                                                        });
+                                                                                }
+                                                                            }} className='flex justify-between text-red-600'>Delete <Trash2 size={16} />
+                                                                            </DropdownMenuItem>
+                                                                            <DropdownMenuItem className='flex justify-between '>Copy <Copy /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                        <DropdownMenuGroup>
+                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuItem className='flex justify-between text-red-600'>Report <MessageSquareWarning className='text-red-600' /></DropdownMenuItem>
+                                                                        </DropdownMenuGroup>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
-                                        ))
+                                        );
+                                    })
                                     }
                                 </div>
                             </div>
@@ -288,7 +398,8 @@ function page() {
                             <div className='flex items-center gap-2 px-3 py-2 border-t bg-white dark:bg-[#1111]'>
                                 <div className='relative flex items-center w-full border rounded-full px-4 py-1 focus-within:border-gray-400'>
 
-                                    <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} />
+                                    {/* <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} /> */}
+                                    <ChatInput onEmojiSelect={handleEmojiSelect} />
 
                                     <input
                                         className='w-full bg-transparent py-2 px-3 outline-none text-sm text-black dark:text-white'
@@ -300,8 +411,22 @@ function page() {
                                         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                     />
                                     <div className='flex items-center gap-3 text-gray-600'>
-                                        <Mic className='cursor-pointer hover:text-black' size={20} />
-                                        <ImageDown className='cursor-pointer hover:text-black' size={20} />
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    handleSendMessage(file);
+                                                }
+                                            }}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                        />
+                                        <Mic className={`${messageText.length > 0 ? "hidden" : 'block'} cursor-pointer dark:text-white text-black dark:hover:text-blue-500 hover:text-blue-500`} size={20} />
+                                        <ImageDown onClick={handleIconClick} className={`${messageText.length > 0 ? "hidden" : 'block'} cursor-pointer dark:text-white text-black dark:hover:text-blue-500 hover:text-blue-500`} size={20}
+                                        />
                                         <Send onClick={handleSendMessage} className={`cursor-pointer font-bold ${messageText.trim() ? 'text-blue-500 hover:text-blue-700' : 'text-gray-300 pointer-events-none'}`} size={20} />
                                     </div>
                                 </div>

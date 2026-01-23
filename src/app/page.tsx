@@ -24,7 +24,7 @@ const Page = () => {
 
   const { register, handleSubmit } = useForm<IFormInput>();
 
-  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+  const onSubmit: SubmitHandler<IFormInput> = async (data:any) => {
     const resultAction = await dispatch(loginUser(data));
 
     if (loginUser.fulfilled.match(resultAction)) {
@@ -36,7 +36,7 @@ const Page = () => {
   };
 
   return (
-    <div className="flex justify-evenly items-center p-20">
+    <div className="flex justify-evenly items-center">
       <Image src="/landing-2x.png" alt="logo" width={521} height={450} />
 
       <form

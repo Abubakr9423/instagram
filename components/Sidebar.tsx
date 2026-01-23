@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { Switch } from "antd";
+import { jwtDecode } from "jwt-decode"; 
 
 import {
   DropdownMenu,
@@ -24,10 +23,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { instagramFont } from "@/src/app/font";
 
 import {
+  Compass,
   Heart,
   Home,
   InstagramIcon,
@@ -41,7 +40,7 @@ import {
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/search", label: "Search", icon: Search },
-  { href: "/explore", label: "Explore", icon: SquarePlay },
+  { href: "/explore", label: "Explore", icon: Compass },
   { href: "/reels", label: "Reels", icon: SquarePlay },
   { href: "/messages", label: "Messages", icon: MessageCircleMoreIcon },
   { href: "/notifications", label: "Notifications", icon: Heart },
@@ -53,20 +52,36 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  const [mounted, setMounted] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        // ✅ Adjust claim name to match your JWT payload
+        setProfileImage(decoded?.picture || null);
+      } catch (err) {
+        console.error("Invalid token", err);
+      }
+    }
+  }, []);
 
   if (pathname === "/" || pathname === "/register") return null;
 
-  const showText = pathname === "/home";
+  // ✅ Corrected logic
+  const showText = pathname === "/home" || pathname === "/search";
 
   useEffect(() => {
     document.body.style.setProperty("--sidebar-width", showText ? "260px" : "80px");
   }, [showText]);
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token"); // ✅ safer
     router.push("/");
   };
 
@@ -78,6 +93,7 @@ export function Sidebar() {
       className="h-screen border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0"
     >
       <div className="flex h-full flex-col justify-between px-3 py-4">
+        {/* Logo */}
         <div className="mb-10 flex items-center gap-3 px-2">
           <AnimatePresence mode="wait">
             {showText ? (
@@ -93,7 +109,6 @@ export function Sidebar() {
               >
                 Instagram
               </motion.span>
-
             ) : (
               <motion.div
                 key="logo-icon"
@@ -127,7 +142,15 @@ export function Sidebar() {
                   <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-black dark:bg-white" />
                 )}
 
-                <Icon className={clsx("h-6 w-6 transition-transform", active && "scale-110")} />
+                {href === "/profile" && profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <Icon className={clsx("h-6 w-6 transition-transform", active && "scale-110")} />
+                )}
 
                 {showText && <span>{label}</span>}
               </Link>
@@ -135,14 +158,17 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Footer / More menu */}
+        {/* Dropdown Menu */}
         <div className="mt-6 flex flex-col gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <p className="flex items-center gap-4 rounded-xl px-3 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer">
+              <button
+                className="flex items-center gap-4 rounded-xl px-3 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer"
+                aria-label="More options"
+              >
                 <span className="text-xl">☰</span>
                 {showText && <span>More</span>}
-              </p>
+              </button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
@@ -157,7 +183,16 @@ export function Sidebar() {
                 </DropdownMenuLabel>
 
                 <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>👤</span> Profile
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="h-5 w-5 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                  Profile
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
@@ -192,23 +227,6 @@ export function Sidebar() {
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
-
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>👥</span> New Team
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-
-              <DropdownMenuSeparator className="my-2 border-t border-gray-200 dark:border-neutral-800" />
-
-              {/* Other Links */}
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>💻</span> GitHub
-                </DropdownMenuItem>
-
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>🛟</span> Support
-                </DropdownMenuItem>
               </DropdownMenuGroup>
 
               <DropdownMenuSeparator className="my-2 border-t border-gray-200 dark:border-neutral-800" />
@@ -219,7 +237,8 @@ export function Sidebar() {
                   onClick={logout}
                   className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-50 text-red-600 dark:hover:bg-red-950 dark:text-red-500 transition"
                 >
-                  <span>🚪</span> Log out
+                  <span>
+                    🚪</span> Log out
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
