@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { instagramFont } from "@/src/app/font";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import {
   Compass,
@@ -61,7 +61,7 @@ export function Sidebar() {
   if (token) {
     try {
       decoded = jwtDecode(token);
-      profileImage = decoded?.sub || null; 
+      profileImage = decoded?.sub || null;
     } catch (err) {
       console.error("Invalid token", err);
     }
@@ -71,7 +71,7 @@ export function Sidebar() {
 
   if (pathname === "/" || pathname === "/register") return null;
 
-  const showText = pathname === "/home";
+  const showText = pathname === "/home" && pathname === "/search";
 
   useEffect(() => {
     document.body.style.setProperty("--sidebar-width", showText ? "260px" : "80px");
