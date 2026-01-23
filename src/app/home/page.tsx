@@ -325,7 +325,7 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
                 </div>
 <Send />
               </div>
-              <button style={{ backgroundColor: e.postFavorite ?  }} onClick={() => dispatch(addFavorite(e.postId))}>
+              <button style={{ backgroundColor: e.postFavorite ? 'black' : 'white' }} onClick={() => dispatch(addFavorite(e.postId))}>
               <Bookmark />
               </button>
             </div>
