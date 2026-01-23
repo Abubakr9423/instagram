@@ -61,7 +61,7 @@ export const createApiMessages = createSlice({
             })
 
             .addCase(getChatById.pending, (state) => {
-                state.loading = true;
+                if (state.messages.length === 0) state.loading = true;
             })
             .addCase(getChatById.fulfilled, (state, action: PayloadAction<any>) => {
                 state.loading = false;
@@ -93,11 +93,10 @@ export const createApiMessages = createSlice({
                 state.loading = false;
             })
             .addCase(SendMessage.pending, (state) => {
-                state.loading = true;
+                state.error = null;
             })
             .addCase(SendMessage.fulfilled, (state, action) => {
                 state.loading = false;
-                state.messages = Array.isArray(action.payload?.data) ? action.payload.data : [];
             })
             .addCase(GetMyProfile.pending, (state) => {
                 state.loading = true;
