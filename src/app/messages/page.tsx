@@ -307,16 +307,24 @@ function page() {
                                                             )
                                                         }
 
-
                                                         {msg.file && (
-                                                            <div className="mb-2">
-                                                                <Image
-                                                                    src={`https://instagram-api.softclub.tj/images/${msg.file}`}
-                                                                    alt="sent image"
-                                                                    width={150}
-                                                                    height={150}
-                                                                    className="rounded-lg object-cover w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                                                                />
+                                                            <div className="mb-2 max-w-[200px]">
+                                                                {msg.file.endsWith('.mp4') ? (
+                                                                    <video
+                                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                                        controls
+                                                                        className="rounded-lg w-full"
+                                                                    />
+                                                                ) : (
+                                                                    <Image
+                                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                                        alt="sent file"
+                                                                        width={200}
+                                                                        height={200}
+                                                                        unoptimized
+                                                                        className="rounded-lg object-cover w-full h-auto cursor-pointer"
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
 

@@ -68,8 +68,7 @@ export const SendMessage = createAsyncThunk("messages/SendMessage", async ({ cha
         console.error("Error sending message:", error.response?.data || error.message);
         throw error;
     }
-}
-);
+});
 
 export const GetMyProfile = createAsyncThunk("auth/GetMyProfile", async () => {
     const response = await axiosRequest.get("/UserProfile/get-my-profile");
