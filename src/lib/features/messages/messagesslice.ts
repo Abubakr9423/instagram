@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { CreateChat, DeleteChatById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from './ApiMessages'
+import { CreateChat, DeleteChatById, DeleteMessagesById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from './ApiMessages'
 import { number } from 'motion/react';
 
 type CounterState = {
@@ -106,6 +106,14 @@ export const createApiMessages = createSlice({
                 state.myprofile = action.payload?.data || action.payload;
             })
             .addCase(GetMyProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || "Error fetching profile";
+            })
+            .addCase(DeleteMessagesById.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.messages = action.payload?.data
+            })
+            .addCase(DeleteMessagesById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || "Error fetching profile";
             });
