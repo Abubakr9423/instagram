@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet"
 import { Switch } from '@/components/ui/switch'
 import EmojiMessages from '@/components/EmojiMessages'
+import ChatInput from '@/components/EmojiMessages'
 
 function page() {
     const dispatch = useDispatch<AppDispatch>()
@@ -75,7 +76,7 @@ function page() {
                 message: messageText || "",
                 file: file
             })).unwrap();
-
+            
             setMessageText("");
             if (fileInputRef.current) fileInputRef.current.value = "";
 
@@ -95,6 +96,9 @@ function page() {
         fileInputRef.current?.click();
     };
 
+    const handleEmojiSelect = (emoji) => {
+        setMessageText((prev) => prev + emoji);
+    };
 
     return (
         <div>
@@ -331,7 +335,8 @@ function page() {
                             <div className='flex items-center gap-2 px-3 py-2 border-t bg-white dark:bg-[#1111]'>
                                 <div className='relative flex items-center w-full border rounded-full px-4 py-1 focus-within:border-gray-400'>
 
-                                    <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} />
+                                    {/* <Smile className='cursor-pointer text-gray-500 hover:text-gray-700' size={24} /> */}
+                                    <ChatInput onEmojiSelect={handleEmojiSelect} />
 
                                     <input
                                         className='w-full bg-transparent py-2 px-3 outline-none text-sm text-black dark:text-white'
