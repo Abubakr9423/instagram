@@ -138,7 +138,7 @@ export default function ExplorePage() {
                 <p>{selectedPost.caption}</p>
               </div>
             </div>
-          </div>
+          </div>  
         </div>
       )}
     </div>
