@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-
+import Image from "antd";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,7 +27,10 @@ import {
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { instagramFont } from "@/src/app/font";
 
+import { jwtDecode } from "jwt-decode";
+
 import {
+  Compass,
   Heart,
   Home,
   InstagramIcon,
@@ -37,11 +40,12 @@ import {
   SquarePlay,
   User,
 } from "lucide-react";
+import { GetToken } from "@/src/utils/axios";
 
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/search", label: "Search", icon: Search },
-  { href: "/explore", label: "Explore", icon: SquarePlay },
+  { href: "/explore", label: "Explore", icon: Compass },
   { href: "/reels", label: "Reels", icon: SquarePlay },
   { href: "/messages", label: "Messages", icon: MessageCircleMoreIcon },
   { href: "/notifications", label: "Notifications", icon: Heart },
@@ -54,6 +58,11 @@ export function Sidebar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const token = localStorage.getItem('token')
+  const decoded = jwtDecode(token);
+  console.log(decoded);
+
+
 
   useEffect(() => setMounted(true), []);
 
@@ -93,7 +102,6 @@ export function Sidebar() {
               >
                 Instagram
               </motion.span>
-
             ) : (
               <motion.div
                 key="logo-icon"
