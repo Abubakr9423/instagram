@@ -2,53 +2,52 @@ import { axiosRequest, SaveToken } from "@/src/utils/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const loginUser = createAsyncThunk(
-    "auth/loginUser",
-    async (values, { rejectWithValue }) => {
-        try {
-            const response = await axiosRequest.post("/Account/login", values);
+  "auth/loginUser",
+  async (values:any, { rejectWithValue }:any) => {
+    try {
+      const response = await axiosRequest.post("/Account/login", values);
 
-            const token = response.data?.data;
-            if (token) {
-                SaveToken(token);
-            }
+      const token = response.data?.data;
+      localStorage.setItem("token", token)
+      SaveToken(token);
 
-            return response.data;
-        } catch (error: any) {
-            console.error(error);
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
 
-            const message =
-                error.response?.data?.message ||
-                error.response?.data ||
-                error.message ||
-                "Login failed";
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Login failed";
 
-            return rejectWithValue(message);
-        }
+      return rejectWithValue(message);
     }
+  },
 );
 
 export const registerUser = createAsyncThunk(
-    "auth/registerUser",
-    async (values, { rejectWithValue }) => {
-        try {
-            const response = await axiosRequest.post("/Account/register", values);
+  "auth/registerUser",
+  async (values, { rejectWithValue }) => {
+    try {
+      const response = await axiosRequest.post("/Account/register", values);
 
-            const token = response.data?.data;
-            if (token) {
-                SaveToken(token);
-            }
+      const token = response.data?.data;
+      if (token) {
+        SaveToken(token);
+      }
 
-            return response.data;
-        } catch (error: any) {
-            console.error(error);
+      return response.data;
+    } catch (error: any) {
+      console.error(error);
 
-            const message =
-                error.response?.data?.message ||
-                error.response?.data ||
-                error.message ||
-                "Registration failed";
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Registration failed";
 
-            return rejectWithValue(message);
-        }
+      return rejectWithValue(message);
     }
+  },
 );
