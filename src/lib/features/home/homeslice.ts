@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { axiosRequest } from '@/src/utils/axios'
+import axios from 'axios'
 
 type CounterState = {
   value: number
@@ -85,6 +86,20 @@ export const getFollowing = createAsyncThunk(
   }
 )
 
+export const addFavorite = createAsyncThunk(
+  'home/addFavorite',
+  async (postId:number | string, { dispatch }) => {
+    try {
+      await axiosRequest.post(`/Post/add-post-favorite`, {
+       postId: postId
+      })
+      dispatch(getProduct())
+    } catch (error) {
+      console.error(error);
+    }
+  }
+)
+
 const home = createSlice({
   name: 'home',
   initialState,
@@ -143,7 +158,9 @@ const home = createSlice({
             userName: 'You',
             
             userImage: null,
+            //@ts-ignore
             userName: 'Ibrohim',
+            //@ts-ignore
             userImage: `https://i.ebayimg.com/images/g/5WUAAOSwezZnTx0S/s-l400.jpg`,
             comment
           })

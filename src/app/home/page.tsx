@@ -11,7 +11,7 @@ import img6 from '../../../public/image copy 6.png'
 import { Bookmark, Heart, MessageCircle, Send, Volume2, VolumeX } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from '@/src/lib/store'
-import { getFollowing, getPost, getProduct, postComment, postLike } from '@/src/lib/features/home/homeslice'
+import { addFavorite, getFollowing, getPost, getProduct, postComment, postLike } from '@/src/lib/features/home/homeslice'
 import Image from 'next/image'
 import Stories from 'react-insta-stories';
 import { Button } from "@/components/ui/button"
@@ -107,7 +107,6 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
       },
       { threshold: 0.6 }
     )
-
 
 
     videos.forEach(v => observer.observe(v))
@@ -326,7 +325,9 @@ url: `https://instagram-api.softclub.tj/images/${p.images[0]}`
                 </div>
 <Send />
               </div>
+              <button style={{ backgroundColor: e.postFavorite ?  }} onClick={() => dispatch(addFavorite(e.postId))}>
               <Bookmark />
+              </button>
             </div>
 
             <p>
