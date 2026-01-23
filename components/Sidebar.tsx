@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "antd";
+import { jwtDecode } from "jwt-decode"; 
 
 import {
   DropdownMenu,
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { instagramFont } from "@/src/app/font";
-import {jwtDecode} from "jwt-decode";
 
 import {
   Compass,
@@ -52,33 +52,36 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+
   const [mounted, setMounted] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  let decoded: any = null;
-  let profileImage: string | null = null;
+  useEffect(() => {
+    setMounted(true);
 
-  if (token) {
-    try {
-      decoded = jwtDecode(token);
-      profileImage = decoded?.sub || null; 
-    } catch (err) {
-      console.error("Invalid token", err);
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        // ✅ Adjust claim name to match your JWT payload
+        setProfileImage(decoded?.picture || null);
+      } catch (err) {
+        console.error("Invalid token", err);
+      }
     }
-  }
-
-  useEffect(() => setMounted(true), []);
+  }, []);
 
   if (pathname === "/" || pathname === "/register") return null;
 
-  const showText = pathname === "/home";
+  // ✅ Corrected logic
+  const showText = pathname === "/home" || pathname === "/search";
 
   useEffect(() => {
     document.body.style.setProperty("--sidebar-width", showText ? "260px" : "80px");
   }, [showText]);
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token"); // ✅ safer
     router.push("/");
   };
 
@@ -90,6 +93,7 @@ export function Sidebar() {
       className="h-screen border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0"
     >
       <div className="flex h-full flex-col justify-between px-3 py-4">
+        {/* Logo */}
         <div className="mb-10 flex items-center gap-3 px-2">
           <AnimatePresence mode="wait">
             {showText ? (
@@ -118,6 +122,7 @@ export function Sidebar() {
           </AnimatePresence>
         </div>
 
+        {/* Navigation */}
         <nav className="flex flex-col gap-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
@@ -153,13 +158,17 @@ export function Sidebar() {
           })}
         </nav>
 
+        {/* Dropdown Menu */}
         <div className="mt-6 flex flex-col gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <p className="flex items-center gap-4 rounded-xl px-3 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer">
+              <button
+                className="flex items-center gap-4 rounded-xl px-3 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer"
+                aria-label="More options"
+              >
                 <span className="text-xl">☰</span>
                 {showText && <span>More</span>}
-              </p>
+              </button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
@@ -181,7 +190,7 @@ export function Sidebar() {
                       className="h-5 w-5 rounded-full object-cover"
                     />
                   ) : (
-                    <span>👤</span>
+                    <User className="h-5 w-5" />
                   )}
                   Profile
                 </DropdownMenuItem>
@@ -228,7 +237,8 @@ export function Sidebar() {
                   onClick={logout}
                   className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-50 text-red-600 dark:hover:bg-red-950 dark:text-red-500 transition"
                 >
-                  <span>🚪</span> Log out
+                  <span>
+                    🚪</span> Log out
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

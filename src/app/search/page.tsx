@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@radix-ui/rea
 import { DialogHeader } from "@/components/ui/dialog";
 import { GetUsers } from "@/src/lib/features/messages/ApiMessages";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 export default function SearchPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -94,6 +95,7 @@ export default function SearchPage() {
             searchedUsers.map((user: any) => (
               <div
                 key={user.id}
+                onClick={() => redirect(`/profile/${user.id}`)}
                 className="flex items-center justify-between py-2"
               >
                 <div className="flex items-center gap-4">

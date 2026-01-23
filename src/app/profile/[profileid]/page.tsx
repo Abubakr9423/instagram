@@ -23,7 +23,6 @@ import { MdGridOn, MdPlayArrow, MdPersonOutline } from "react-icons/md";
 import { useState, useEffect, useRef } from "react";
 import { FiShare2 } from "react-icons/fi";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -53,10 +52,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Loader2, User } from "lucide-react";
 import { toast } from "sonner";
+import { useParams } from "next/navigation";
 
 type Comment = {
   commentId: number;
-  userId: string;
+  profileid: string;
   userName: string;
   userImage: string;
   content: string;
@@ -65,7 +65,7 @@ type Comment = {
 
 type Post = {
   postId: number;
-  userId: string;
+  profileid: string;
   userName: string;
   userImage: string;
   datePublished: string;
@@ -83,17 +83,16 @@ type Post = {
 type Follower = {
   id: number;
   userShortInfo: {
-    userId: string;
+    profileid: string;
     userName: string;
     userPhoto: string;
     fullname: string;
   };
-};
+}; 
 
 const ProfileById = () => {
-  const params = useParams();
-  const userId = params?.profileid as string;
-
+  const { profileid } = useParams()
+  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +140,7 @@ const ProfileById = () => {
     try {
       setLoadingFollowers(true);
       const res = await fetch(
-        `https://instagram-api.softclub.tj/FollowingRelationShip/get-subscribers?UserId=${userId}`,
+        `https://instagram-api.softclub.tj/FollowingRelationShip/get-subscribers?UserId=${profileid}`,
         { headers: getAuthHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -160,7 +159,7 @@ const ProfileById = () => {
     try {
       setLoadingFollowing(true);
       const res = await fetch(
-        `https://instagram-api.softclub.tj/FollowingRelationShip/get-subscriptions?UserId=${userId}`,
+        `https://instagram-api.softclub.tj/FollowingRelationShip/get-subscriptions?UserId=${profileid}`,
         { headers: getAuthHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -188,11 +187,9 @@ const ProfileById = () => {
   };
 
   useEffect(() => {
-    if (userId) {
       fetchData();
       fetchPosts();
-    }
-  }, [userId]);
+    }, [profileid]);
 
   useEffect(() => {
     imageObserver.current = new IntersectionObserver(
@@ -236,7 +233,7 @@ const ProfileById = () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `https://instagram-api.softclub.tj/UserProfile/get-user-profile?userId=${userId}`,
+        `https://instagram-api.softclub.tj/UserProfile/get-user-profile-by-id?id=${profileid}`,
         { headers: getAuthHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -260,7 +257,7 @@ const ProfileById = () => {
     try {
       setLoadingPosts(true);
       const res = await fetch(
-        `https://instagram-api.softclub.tj/Post/get-user-posts?userId=${userId}`,
+        `https://instagram-api.softclub.tj/Post/get-user-posts?profileid=${profileid}`,
         { headers: getAuthHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -302,7 +299,7 @@ const ProfileById = () => {
       if (isFollowing) {
         // Unsubscribe
         const res = await fetch(
-          `https://instagram-api.softclub.tj/FollowingRelationShip/delete-following-relation-ship?followingUserId=${userId}`,
+          `https://instagram-api.softclub.tj/FollowingRelationShip/delete-following-relation-ship?followingUserId=${profileid}`,
           {
             method: "DELETE",
             headers: getAuthHeader(),
@@ -314,7 +311,7 @@ const ProfileById = () => {
       } else {
         // Subscribe
         const res = await fetch(
-          `https://instagram-api.softclub.tj/FollowingRelationShip/add-following-relation-ship?followingUserId=${userId}`,
+          `https://instagram-api.softclub.tj/FollowingRelationShip/add-following-relation-ship?followingUserId=${profileid}`,
           {
             method: "POST",
             headers: getAuthHeader(),
@@ -469,8 +466,8 @@ const ProfileById = () => {
               className="w-full h-full object-cover"
               loading="lazy"
               onError={(e) =>
-                (e.currentTarget.src =
-                  "https://via.placeholder.com/400?text=Post+Image")
+              (e.currentTarget.src =
+                "https://via.placeholder.com/400?text=Post+Image")
               }
               ref={(el) => {
                 if (
@@ -532,7 +529,7 @@ const ProfileById = () => {
     );
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen  bg-black text-white">
       <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
         <div className="max-w-[935px] mx-auto px-4 py-3 flex justify-between items-center">
           <h1 className="text-xl font-semibold">
@@ -576,11 +573,10 @@ const ProfileById = () => {
                 <Button
                   onClick={handleFollowToggle}
                   disabled={followLoading}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
-                    isFollowing
-                      ? "bg-gray-800 hover:bg-gray-700"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${isFollowing
+                    ? "bg-gray-800 hover:bg-gray-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                    }`}
                 >
                   {followLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
