@@ -49,8 +49,8 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
-import { useDropzone } from "react-dropzone";
 import { Loader2, Upload, User } from "lucide-react";
+import { useDropzone } from 'react-dropzone';
 type Comment = {
   commentId: number;
   userId: string;
@@ -109,7 +109,7 @@ const Profile = () => {
   const observedImages = useRef<Set<Element>>(new Set());
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles:any) => {
+    onDrop: (acceptedFiles: any) => {
       setImages(acceptedFiles);
     },
     accept: {
@@ -565,8 +565,8 @@ const Profile = () => {
               className="w-full h-full object-cover"
               loading="lazy"
               onError={(e) =>
-                (e.currentTarget.src =
-                  "https://via.placeholder.com/400?text=Post+Image")
+              (e.currentTarget.src =
+                "https://via.placeholder.com/400?text=Post+Image")
               }
               ref={(el) => {
                 if (
@@ -900,7 +900,7 @@ const Profile = () => {
                 disabled={uploading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="content" className="text-white">Content</Label>
               <Textarea
@@ -913,16 +913,15 @@ const Profile = () => {
                 disabled={uploading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label className="text-white">Images/Videos</Label>
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                  isDragActive 
-                    ? "border-blue-500 bg-blue-500/10" 
+                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragActive
+                    ? "border-blue-500 bg-blue-500/10"
                     : "border-gray-700 hover:border-gray-600"
-                }`}
+                  }`}
               >
                 <input {...getInputProps()} />
                 <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
