@@ -50,7 +50,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="flex h-screen bg-black text-white relative left-[-425px]">
+    <div className="flex h-screen bg-black text-white">
       <main className="flex-grow max-w-xl w-full border-l border-gray-800 p-6">
         <h1 className="text-2xl font-bold mb-5">Search</h1>
 

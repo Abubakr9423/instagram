@@ -4,10 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import Image from "antd";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { Switch } from "antd";
 
 import {
@@ -24,10 +22,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { instagramFont } from "@/src/app/font";
-
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 
 import {
   Compass,
@@ -40,7 +36,6 @@ import {
   SquarePlay,
   User,
 } from "lucide-react";
-import { GetToken } from "@/src/utils/axios";
 
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -58,11 +53,19 @@ export function Sidebar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const token = localStorage.getItem('token')
-  const decoded = jwtDecode(token);
-  console.log(decoded);
 
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  let decoded: any = null;
+  let profileImage: string | null = null;
 
+  if (token) {
+    try {
+      decoded = jwtDecode(token);
+      profileImage = decoded?.sub || null; // use "sub" key as image URL
+    } catch (err) {
+      console.error("Invalid token", err);
+    }
+  }
 
   useEffect(() => setMounted(true), []);
 
@@ -86,7 +89,8 @@ export function Sidebar() {
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className="h-screen border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0"
     >
-      <div className="flex h-full flex-col bg-white justify-between px-3 py-4">
+      <div className="flex h-full flex-col justify-between px-3 py-4">
+        {/* Logo */}
         <div className="mb-10 flex items-center gap-3 px-2">
           <AnimatePresence mode="wait">
             {showText ? (
@@ -135,7 +139,16 @@ export function Sidebar() {
                   <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r bg-black dark:bg-white" />
                 )}
 
-                <Icon className={clsx("h-6 w-6 transition-transform", active && "scale-110")} />
+                {/* Profile image from token */}
+                {href === "/profile" && profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <Icon className={clsx("h-6 w-6 transition-transform", active && "scale-110")} />
+                )}
 
                 {showText && <span>{label}</span>}
               </Link>
@@ -165,7 +178,16 @@ export function Sidebar() {
                 </DropdownMenuLabel>
 
                 <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>👤</span> Profile
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="h-5 w-5 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span>👤</span>
+                  )}
+                  Profile
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
@@ -200,23 +222,6 @@ export function Sidebar() {
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
-
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>👥</span> New Team
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-
-              <DropdownMenuSeparator className="my-2 border-t border-gray-200 dark:border-neutral-800" />
-
-              {/* Other Links */}
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>💻</span> GitHub
-                </DropdownMenuItem>
-
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>🛟</span> Support
-                </DropdownMenuItem>
               </DropdownMenuGroup>
 
               <DropdownMenuSeparator className="my-2 border-t border-gray-200 dark:border-neutral-800" />
