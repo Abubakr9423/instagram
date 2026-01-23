@@ -4,12 +4,12 @@
 @custom-variant dark (&:is(.dark *));
 /* Скрываем горизонтальный скроллбар везде, где есть класс scrollbar-hide */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Скрывает скроллбар в IE и Edge */
-  scrollbar-width: none;     /* Скрывает в Firefox */
+  -ms-overflow-style: none; /* Скрывает скроллбар в IE и Edge */
+  scrollbar-width: none; /* Скрывает в Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;             /* Скрывает в Chrome, Safari, Opera */
+  display: none; /* Скрывает в Chrome, Safari, Opera */
 }
 @theme inline {
   --color-background: var(--background);
@@ -88,7 +88,6 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
-
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -122,8 +121,10 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
-*{
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+* {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
 }
 @layer base {
   * {
@@ -140,10 +141,10 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, A
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: #dbdbdb;
   border-radius: 10px;
-
 }
 
-::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

@@ -8,6 +8,10 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { instagramFont } from './font';
+import clsx from "clsx";
+
 
 interface IFormInput {
   username: string;
@@ -32,12 +36,25 @@ const Page = () => {
   };
 
   return (
-    <div className="flex justify-evenly items-center p-20">
+    <div className="flex justify-evenly items-center">
       <Image src="/landing-2x.png" alt="logo" width={521} height={450} />
+
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-3 w-80 p-6 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
+        className="flex flex-col gap-3 w-100 p-6 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
       >
+        <motion.span
+          key="logo-text"
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 12 }}
+          className={clsx(
+            instagramFont.className,
+            "text-[30px] text-center tracking-tight text-gray-900 dark:text-white select-none"
+          )}
+        >
+          Instagram
+        </motion.span>
         <input
           {...register("username")}
           type="text"
