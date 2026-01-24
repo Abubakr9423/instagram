@@ -11,7 +11,7 @@ import img6 from '../../../public/image copy 6.png'
 import { Bookmark, Heart, MessageCircle, Send, Volume2, VolumeX, MoreHorizontal, Smile, X, ChevronLeft, ChevronRight, Share2 } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from '@/src/lib/store'
-import { addFavorite, getFollowing, getPost, getProduct, postComment, postLike } from '@/src/lib/features/home/homeslice'
+import { addFavorite, getFollowing, getPost, getProduct, postComment, postLike, saveposts } from '@/src/lib/features/home/homeslice'
 import Image from 'next/image'
 import Stories from 'react-insta-stories';
 import { Button } from "@/components/ui/button"
@@ -312,10 +312,13 @@ export default function Home() {
                 </div>
                 <Send className="text-black dark:text-white" />
               </div>
-              <button style={{ backgroundColor: e.postFavorite ? 'black' : 'white' }} onClick={() => dispatch(addFavorite(e.postId))}>
-              <Bookmark />
-              </button>
-              <Bookmark className="text-black dark:text-white" />
+              <button onClick={() => dispatch(saveposts(e.postId))}>
+  <Bookmark
+    fill={e.isFavorite ? 'white' : 'none'}
+    stroke="white"
+  />
+</button>
+
             </div>
 
             <p className="dark:text-white">

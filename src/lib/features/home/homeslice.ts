@@ -54,6 +54,15 @@ export const postLike = createAsyncThunk(
   }
 )
 
+export const saveposts = createAsyncThunk(
+  'home/saveposts',
+  async (postId: number) => {
+    await axiosRequest.post('/Post/add-post-favorite', { postId })
+    return postId
+  }
+)
+
+
 export const postComment = createAsyncThunk(
   'home/postComment',
   async (
@@ -126,6 +135,13 @@ const home = createSlice({
       .addCase(getProduct.rejected, state => {
         state.loading = false
       })
+      .addCase(saveposts.fulfilled, (state, action) => {
+  const post = state.data.find(p => p.postId === action.payload)
+  if (post) {
+    post.isFavorite = !post.isFavorite
+  }
+})
+
 
       .addCase(getPost.pending, state => {
         state.loading = true
