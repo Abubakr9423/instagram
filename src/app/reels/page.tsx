@@ -43,7 +43,7 @@ function ReelItem({ item }: { item: any }) {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-screen">
       <video
         ref={videoRef}
         src={`https://instagram-api.softclub.tj/images/${item.images}`}
