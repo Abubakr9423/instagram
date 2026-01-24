@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Switch } from '@/components/ui/switch'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRouter } from 'next/navigation'
+import VoiceRecorder from '../components/VoiceRecorder'
 
 export default function ChatPage() {
     const router = useRouter();
@@ -40,6 +41,14 @@ export default function ChatPage() {
             file: file
         }));
         setMessageText("");
+    };
+
+    const handleSendVoice = async (file: File) => {
+        await dispatch(SendMessage({
+            chatId: chatbyid,
+            message: "Voice message",
+            file: file
+        }));
     };
 
     const handleEmojiSelect = (emoji: string) => {
@@ -248,7 +257,8 @@ export default function ChatPage() {
                     />
                     <div className='flex items-center gap-3'>
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={(e) => e.target.files?.[0] && handleSendMessage(e.target.files[0])} />
-                        <Mic className={`${messageText.length > 0 ? "hidden" : 'block'} cursor-pointer dark:text-white text-black`} size={20} />
+                        {/* <Mic className={`${messageText.length > 0 ? "hidden" : 'block'} cursor-pointer dark:text-white text-black`} size={20} /> */}
+                        <VoiceRecorder onSend={handleSendVoice} />
                         <ImageDown onClick={handleIconClick} className={`${messageText.length > 0 ? "hidden" : 'block'} cursor-pointer dark:text-white text-black`} size={20} />
                         <Send onClick={() => handleSendMessage()} className={`cursor-pointer font-bold ${messageText.trim() ? 'text-blue-500' : 'text-gray-300 pointer-events-none'}`} size={20} />
                     </div>
