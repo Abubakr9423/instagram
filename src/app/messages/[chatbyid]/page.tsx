@@ -60,6 +60,8 @@ export default function ChatPage() {
     };
 
     if (!selectedChat) return <div className="p-10 text-center h-screen">Loading chat...</div>;
+    console.log(selectedChat);
+
 
     return (
         <div className='flex flex-col h-full bg-white dark:bg-black w-full'>
@@ -131,7 +133,18 @@ export default function ChatPage() {
                     />
                     <h1 className='text-2xl font-semibold mt-2'>{myprofile?.userName == selectedChat.sendUserName ? selectedChat.receiveUserName : selectedChat.sendUserName}</h1>
                     <p className='text-gray-400 mb-2'>Instagram</p>
-                    <button className='py-1 px-4 rounded-lg text-sm font-semibold text-black bg-gray-200 hover:bg-gray-300'>View profile</button>
+                    <button onClick={() => {
+                        const targetId = myprofile?.userName === selectedChat.sendUserName
+                            ? selectedChat.receiveUserId
+                            : selectedChat.sendUserId;
+                        if (targetId) {
+                            router.push(`/profile/${targetId}`);
+                        }
+                    }}
+                        className='py-1 px-4 rounded-lg text-sm font-semibold text-black bg-gray-200 hover:bg-gray-300'
+                    >
+                        View profile
+                    </button>
                 </div>
 
                 <div className='flex flex-col gap-3'>
