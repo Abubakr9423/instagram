@@ -1,42 +1,44 @@
 import { axiosRequest, SaveToken } from "@/src/utils/axios";
 import { createAsyncThunk } from "@reduxjs/toolkit"
 
+
 export const Getchats = createAsyncThunk("auth/Getchats", async () => {
     try {
         const response = await axiosRequest.get("/Chat/get-chats");
         return response.data;
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
     }
 }
 );
-export const getChatById = createAsyncThunk("auth/getChatById", async (chatId) => {
+export const getChatById = createAsyncThunk("auth/getChatById", async (chatId: string | number) => {
     try {
         const response = await axiosRequest.get(`/Chat/get-chat-by-id?chatId=${chatId}`);
         return response.data;
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
     }
 }
 );
-export const DeleteChatById = createAsyncThunk("auth/DeleteChatById", async (chatId, { dispatch }) => {
+export const DeleteChatById = createAsyncThunk("auth/DeleteChatById", async (chatId: string | number, { dispatch }) => {
     try {
         await axiosRequest.delete(`/Chat/delete-chat?chatId=${chatId}`);
         dispatch(Getchats())
         return chatId
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
     }
 });
-export const DeleteMessagesById = createAsyncThunk("auth/DeleteMessagesById", async (MessId, { dispatch }) => {
+export const DeleteMessagesById = createAsyncThunk("auth/DeleteMessagesById", async ({ MessId, chatId }: { MessId: number, chatId: string }, { dispatch }) => {
     try {
         await axiosRequest.delete(`/Chat/delete-message?massageId=${MessId}`);
-        dispatch(getChatById())
-        return MessId
+        dispatch(getChatById(chatId));
+        return MessId;
     } catch (error: any) {
         console.error(error);
     }
-});
+}
+);
 export const GetUsers = createAsyncThunk("auth/GetUsers", async (searchTerm: string = "") => {
     try {
         const response = await axiosRequest.get(`/User/get-users?userName=${searchTerm}`);
