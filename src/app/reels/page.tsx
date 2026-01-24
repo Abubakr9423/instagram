@@ -65,13 +65,17 @@ function ReelItem({ item }: { item: any }) {
           onClick={() => dispatch(postLike(item.postId))}
           className="flex flex-col items-center gap-1"
         >
-          <Heart
+          <div
+                  onClick={() => dispatch(postLike(item.postId))}
+                  className="flex items-center gap-[8px] cursor-pointer flex-col"
+                >
+                  <Heart
                     onClick={() => dispatch(postLike(item.postId))}
-                    className={`w-6 h-6 transition-all ${
-                      item.postLike ? "fill-red-500 text-red-500" : "text-black"
-                    }`}
+                    className={`w-6 h-6 transition-all ${item.postLike ? 'fill-red-500 text-red-500' : 'text-black dark:text-white'
+                      }`}
                   />
-          <span className="text-[12px]">{item.postLikeCount}</span>
+                  <p className="text-[16px] font-[650] dark:text-white">{item.postLikeCount}</p>
+                </div>
         </button>
 
         <Dialog>

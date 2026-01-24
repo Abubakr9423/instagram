@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { instagramFont } from "../font";
 import { Facebook } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { registerUser } from "@/src/lib/features/log/logapi";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";

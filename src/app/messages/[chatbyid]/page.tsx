@@ -180,9 +180,27 @@ export default function ChatPage() {
                                         {msg.file && (
                                             <div className="mb-2 max-w-62.5">
                                                 {msg.file.endsWith('.mp4') ? (
-                                                    <video width={150} height={150} src={`https://instagram-api.softclub.tj/images/${msg.file}`} controls className="rounded-lg w-full" />
+                                                    <video
+                                                        width={150}
+                                                        height={150}
+                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                        controls
+                                                        className="rounded-lg w-full"
+                                                    />
+                                                ) : msg.file.endsWith('.mp3') || msg.file.endsWith('.wav') ? (
+                                                    <audio
+                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                        controls
+                                                        className="w-full"
+                                                    />
                                                 ) : (
-                                                    <Image src={`https://instagram-api.softclub.tj/images/${msg.file}`} alt="file" width={200} height={200} className="rounded-lg object-cover cursor-pointer" />
+                                                    <Image
+                                                        src={`https://instagram-api.softclub.tj/images/${msg.file}`}
+                                                        alt="file"
+                                                        width={200}
+                                                        height={200}
+                                                        className="rounded-lg object-cover cursor-pointer"
+                                                    />
                                                 )}
                                             </div>
                                         )}
