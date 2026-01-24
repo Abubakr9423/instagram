@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "antd";
-import { jwtDecode } from "jwt-decode"; 
+import { jwtDecode } from "jwt-decode";
 
 import {
   DropdownMenu,
@@ -63,7 +63,6 @@ export function Sidebar() {
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
-        // ✅ Adjust claim name to match your JWT payload
         setProfileImage(decoded?.picture || null);
       } catch (err) {
         console.error("Invalid token", err);
@@ -71,17 +70,19 @@ export function Sidebar() {
     }
   }, []);
 
+  // Hide sidebar on auth pages
   if (pathname === "/" || pathname === "/register") return null;
 
-  // ✅ Corrected logic
-  const showText = pathname === "/home" || pathname === "/search";
+  // ✅ Sidebar expands (shows text) on Home and Search (including subroutes)
+  const showText =
+    pathname.startsWith("/home") || pathname.startsWith("/search");
 
   useEffect(() => {
     document.body.style.setProperty("--sidebar-width", showText ? "260px" : "80px");
   }, [showText]);
 
   const logout = () => {
-    localStorage.removeItem("token"); // ✅ safer
+    localStorage.removeItem("token");
     router.push("/");
   };
 
@@ -237,8 +238,7 @@ export function Sidebar() {
                   onClick={logout}
                   className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-50 text-red-600 dark:hover:bg-red-950 dark:text-red-500 transition"
                 >
-                  <span>
-                    🚪</span> Log out
+                  <span>🚪</span> Log out
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

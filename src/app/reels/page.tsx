@@ -25,7 +25,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 function ReelItem({ item }: { item: any }) {
   const dispatch = useDispatch<AppDispatch>();
@@ -63,16 +62,15 @@ function ReelItem({ item }: { item: any }) {
 
       <div className="absolute right-3 bottom-24 flex flex-col gap-6 text-white">
         <button
-          onClick={() => dispatch(Postlike(item.postId))}
+          onClick={() => dispatch(postLike(item.postId))}
           className="flex flex-col items-center gap-1"
         >
           <Heart
-            className={`w-7 h-7 transition-all ${
-              item.isLiked
-                ? "fill-red-500 text-red-500 scale-110"
-                : "text-white"
-            }`}
-          />
+                    onClick={() => dispatch(postLike(item.postId))}
+                    className={`w-6 h-6 transition-all ${
+                      item.postLike ? "fill-red-500 text-red-500" : "text-black"
+                    }`}
+                  />
           <span className="text-[12px]">{item.postLikeCount}</span>
         </button>
 

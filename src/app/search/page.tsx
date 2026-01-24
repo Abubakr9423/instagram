@@ -11,11 +11,10 @@ import { redirect } from "next/navigation";
 
 export default function SearchPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { Users, loading } = useSelector((state: RootState) => state.messagesApi);
+  const { Users, loading } = useSelector((state: any) => state.messagesApi);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchedUsers, setSearchedUsers] = useState<any[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -34,7 +33,7 @@ export default function SearchPage() {
   }, [Users]);
 
   const handleClearInput = () => {
-    setSearchTerm(""); 
+    setSearchTerm("");
   };
 
   const handleRemoveUser = (id: string) => {
@@ -92,6 +91,8 @@ export default function SearchPage() {
           {loading ? (
             <p className="text-gray-500 text-sm">Searching...</p>
           ) : searchedUsers && searchedUsers.length > 0 ? (
+
+
             searchedUsers.map((user: any) => (
               <div
                 key={user.id}

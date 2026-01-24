@@ -1,5 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getReels } from "./reelsapi";
+import { axiosRequest } from "@/src/utils/axios";
 
 interface ReelsState {
   reels: any[];
@@ -12,6 +13,14 @@ const initialState: ReelsState = {
   loading: false,
   error: null,
 };
+
+export const saveposts = createAsyncThunk(
+  'home/saveposts',
+  async (postId: number) => {
+    await axiosRequest.post('/Post/add-post-favorite', { postId })
+    return postId
+  }
+)
 
 const reelsSlice = createSlice({
   name: "reels",
@@ -27,6 +36,12 @@ const reelsSlice = createSlice({
         state.loading = false;
         state.reels = action.payload; 
       })
+      .addCase(saveposts.fulfilled, (state, action) => {
+  const post = state.reels.find(p => p.postId === action.payload)
+  if (post) {
+    post.isFavorite = !post.isFavorite
+  }
+})
       .addCase(getReels.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Something went wrong";
