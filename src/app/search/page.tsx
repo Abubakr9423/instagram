@@ -1,9 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, SquarePen } from "lucide-react";
+import { Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@radix-ui/react-dialog";
 import { DialogHeader } from "@/components/ui/dialog";
 import { GetUsers } from "@/src/lib/features/messages/ApiMessages";
 import Image from "next/image";
@@ -50,25 +55,27 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="flex h-screen bg-black text-white">
-      <main className="flex-grow max-w-xl w-full border-l border-gray-800 p-6">
+    <div className="flex h-screen bg-white text-gray-900 dark:bg-black dark:text-white">
+      <main className="flex-grow max-w-xl w-full border-l border-gray-200 dark:border-gray-800 p-6">
         <h1 className="text-2xl font-bold mb-5">Search</h1>
 
         <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search"
-            className="w-full rounded-full bg-gray-900 py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-full bg-gray-100 dark:bg-gray-900 py-3 pl-12 pr-4 
+                       text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {searchTerm && (
             <button
               type="button"
               aria-label="Clear search"
               onClick={handleClearInput}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white"
             >
               ×
             </button>
@@ -80,7 +87,7 @@ export default function SearchPage() {
             <h2 className="font-semibold text-sm">Results</h2>
             {searchedUsers?.length > 0 && (
               <button
-                className="text-blue-500 text-sm hover:underline"
+                className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
                 onClick={handleClearAll}
               >
                 Clear All
@@ -91,13 +98,11 @@ export default function SearchPage() {
           {loading ? (
             <p className="text-gray-500 text-sm">Searching...</p>
           ) : searchedUsers && searchedUsers.length > 0 ? (
-
-
             searchedUsers.map((user: any) => (
               <div
                 key={user.id}
                 onClick={() => redirect(`/profile/${user.id}`)}
-                className="flex items-center justify-between py-2"
+                className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg px-2"
               >
                 <div className="flex items-center gap-4">
                   <Image
@@ -109,11 +114,11 @@ export default function SearchPage() {
                     alt={user.userName}
                     width={40}
                     height={40}
-                    className="w-10 h-10 rounded-full object-cover border"
+                    className="w-10 h-10 rounded-full object-cover border border-gray-300 dark:border-gray-700"
                   />
                   <div>
                     <p className="font-semibold text-sm">{user.userName}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {user.name} · {user.status || "Following"}
                     </p>
                   </div>
@@ -122,7 +127,7 @@ export default function SearchPage() {
                   type="button"
                   aria-label="Remove recent search"
                   onClick={() => handleRemoveUser(user.id)}
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-white"
                 >
                   ×
                 </button>

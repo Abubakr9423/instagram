@@ -70,12 +70,10 @@ export function Sidebar() {
     }
   }, []);
 
-  // Hide sidebar on auth pages
   if (pathname === "/" || pathname === "/register") return null;
 
-  // ✅ Sidebar expands (shows text) on Home and Search (including subroutes)
   const showText =
-    pathname.startsWith("/home") || pathname.startsWith("/search");
+    pathname.startsWith("/home");
 
   useEffect(() => {
     document.body.style.setProperty("--sidebar-width", showText ? "260px" : "80px");
