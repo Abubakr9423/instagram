@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@radix-ui/rea
 import { DialogHeader } from "@/components/ui/dialog";
 import { GetUsers } from "@/src/lib/features/messages/ApiMessages";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 export default function SearchPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -50,7 +51,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="flex h-screen bg-black text-white relative left-[-425px]">
+    <div className="flex h-screen bg-black text-white">
       <main className="flex-grow max-w-xl w-full border-l border-gray-800 p-6">
         <h1 className="text-2xl font-bold mb-5">Search</h1>
 
@@ -94,6 +95,7 @@ export default function SearchPage() {
             searchedUsers.map((user: any) => (
               <div
                 key={user.id}
+                onClick={() => redirect(`/profile/${user.id}`)}
                 className="flex items-center justify-between py-2"
               >
                 <div className="flex items-center gap-4">
