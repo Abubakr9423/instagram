@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { axiosRequest } from '@/src/utils/axios'
+import axios from 'axios'
 
 type CounterState = {
   value: number
@@ -19,45 +20,53 @@ const initialState: CounterState = {
 
 export const getProduct = createAsyncThunk(
   'home/getProduct',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       const { data } = await axiosRequest.get('Post/get-reels?PageNumber=1&PageSize=20')
       return data.data
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
 
 export const getPost = createAsyncThunk(
   'home/getPost',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       const { data } = await axiosRequest.get('/Post/get-posts')
       return data.data
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
 
 export const postLike = createAsyncThunk(
   'home/postLike',
-  async (id: number, { rejectWithValue }) => {
+  async (id: number) => {
     try {
       await axiosRequest.post(`/Post/like-post?postId=${id}`)
       return id
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
+
+export const saveposts = createAsyncThunk(
+  'home/saveposts',
+  async (postId: number) => {
+    await axiosRequest.post('/Post/add-post-favorite', { postId })
+    return postId
+  }
+)
+
 
 export const postComment = createAsyncThunk(
   'home/postComment',
   async (
     { id, comment }: { id: number; comment: string },
-    { rejectWithValue }
   ) => {
     try {
       await axiosRequest.post('/Post/add-comment', {
@@ -66,7 +75,7 @@ export const postComment = createAsyncThunk(
       })
       return { id, comment }
     } catch (error) {
-      return rejectWithValue(error)
+      console.error(error);
     }
   }
 )
@@ -82,6 +91,20 @@ export const getFollowing = createAsyncThunk(
     } catch (error) {
       console.error(error);
       
+    }
+  }
+)
+
+export const addFavorite = createAsyncThunk(
+  'home/addFavorite',
+  async (postId:number | string, { dispatch }) => {
+    try {
+      await axiosRequest.post(`/Post/add-post-favorite`, {
+       postId: postId
+      })
+      dispatch(getProduct())
+    } catch (error) {
+      console.error(error);
     }
   }
 )
@@ -112,6 +135,13 @@ const home = createSlice({
       .addCase(getProduct.rejected, state => {
         state.loading = false
       })
+      .addCase(saveposts.fulfilled, (state, action) => {
+  const post = state.data.find(p => p.postId === action.payload)
+  if (post) {
+    post.isFavorite = !post.isFavorite
+  }
+})
+
 
       .addCase(getPost.pending, state => {
         state.loading = true
@@ -144,6 +174,10 @@ const home = createSlice({
             userName: 'You',
             
             userImage: null,
+            //@ts-ignore
+            userName: 'Ibrohim',
+            //@ts-ignore
+            userImage: `https://i.ebayimg.com/images/g/5WUAAOSwezZnTx0S/s-l400.jpg`,
             comment
           })
           post.commentCount += 1

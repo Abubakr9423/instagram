@@ -1,9 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { CreateChat, DeleteChatById, DeleteMessagesById, getChatById, Getchats, GetMyProfile, GetUsers, SendMessage } from './ApiMessages'
-import { number } from 'motion/react';
+
+interface Chat {
+    chatId: number | string;
+    receiveUserId: number | string;
+    sendUserName: string;
+    receiveUserName: string;
+    receiveUserImage: string;
+    sendUserImage: string;
+}
 
 type CounterState = {
-    chats: any[],
+    chats: Chat[],
     messages: any[],
     Users: any[],
     myprofile: MyProfileType | null,
