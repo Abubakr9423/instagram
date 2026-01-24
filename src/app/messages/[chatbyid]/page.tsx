@@ -78,8 +78,18 @@ export default function ChatPage() {
                     </div>
                 </div>
                 <div className='flex gap-4 items-center'>
-                    <Phone size={25} className="cursor-pointer" />
-                    <Link href="/messages/vidiocall"><Video size={30} /></Link>
+                    <Link href={{
+                        pathname: '/messages/calluser',
+                        query: { name: `${myprofile?.userName == selectedChat.sendUserName ? selectedChat.receiveUserName : selectedChat.sendUserName}`, id: chatbyid },
+                    }}>
+                        <Phone size={25} className="cursor-pointer" />
+                    </Link>
+                    <Link href={{
+                        pathname: '/messages/vidiocall',
+                        query: { name: `${myprofile?.userName == selectedChat.sendUserName ? selectedChat.receiveUserName : selectedChat.sendUserName}`, id: chatbyid },
+                    }}>
+                        <Video size={30} className="cursor-pointer" />
+                    </Link>
                     <Sheet>
                         <SheetTrigger><Info size={30} className="cursor-pointer" /></SheetTrigger>
                         <SheetContent>
