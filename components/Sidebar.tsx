@@ -27,12 +27,15 @@ import { instagramFont } from "@/src/app/font";
 
 import {
   Compass,
+  DoorOpen,
   Heart,
   Home,
   InstagramIcon,
   MessageCircleMoreIcon,
+  MoonStar,
   PlusSquareIcon,
   Search,
+  Settings,
   SquarePlay,
   User,
 } from "lucide-react";
@@ -181,21 +184,23 @@ export function Sidebar() {
                   My Account
                 </DropdownMenuLabel>
 
-                <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  {profileImage ? (
-                    <img
-                      src={profileImage}
-                      alt="Profile"
-                      className="h-5 w-5 rounded-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-5 w-5" />
-                  )}
-                  Profile
-                </DropdownMenuItem>
+                <Link href="/profile">
+                  <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
+                    {profileImage ? (
+                      <img
+                        src={profileImage}
+                        alt="Profile"
+                        className="h-5 w-5 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
 
                 <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                  <span>⚙️</span> Settings
+                  <Settings /> Settings
                 </DropdownMenuItem>
               </DropdownMenuGroup>
 
@@ -205,7 +210,7 @@ export function Sidebar() {
               <DropdownMenuGroup>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-gray-100 text-gray-900 dark:hover:bg-neutral-800 dark:text-white transition">
-                    <span>🌗</span> Switch Appearance
+                    <MoonStar /> Switch Appearance
                   </DropdownMenuSubTrigger>
 
                   <DropdownMenuPortal>
@@ -236,7 +241,7 @@ export function Sidebar() {
                   onClick={logout}
                   className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-red-50 text-red-600 dark:hover:bg-red-950 dark:text-red-500 transition"
                 >
-                  <span>🚪</span> Log out
+                  <DoorOpen className="text-red-600" /> Log out
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

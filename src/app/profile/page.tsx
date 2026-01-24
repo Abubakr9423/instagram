@@ -639,14 +639,14 @@ const Profile = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen dark:bg-black dark:text-white flex items-center justify-center">
         <Skeleton className="h-12 w-12 rounded-full" />
       </div>
     );
 
   if (error)
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen dark:bg-black dark:text-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 text-xl mb-4">{error}</p>
           <Button onClick={fetchData}>Повторить</Button>
@@ -655,8 +655,8 @@ const Profile = () => {
     );
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
+    <div className="min-h-screen dark:bg-black dark:text-white">
+      <header className="sticky top-0 z-50 dark:bg-black/95 backdrop-blur-sm border-b dark:border-gray-800">
         <div className="max-w-[935px] mx-auto px-4 py-3 flex justify-between items-center">
           <h1 className="text-xl font-semibold">
             {data?.userName || "Profile"}
@@ -664,21 +664,21 @@ const Profile = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setModalAdd(true)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="p-2 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               <FaPlus className="text-lg" />
             </button>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+            <button className="p-2 dark:hover:bg-gray-800 rounded-lg transition-colors">
               <FiShare2 className="text-lg" />
             </button>
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+            <button className="p-2 dark:hover:bg-gray-800 rounded-lg transition-colors">
               <FaCog className="text-lg" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[935px] mx-auto px-4 py-6">
+      <div className="max-w-233.75 mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row gap-8 md:gap-16 mb-10">
           <div className="flex flex-col items-center md:items-start">
             <div className="relative group">
@@ -693,7 +693,7 @@ const Profile = () => {
                   </AvatarFallback>
                 </Avatar>
                 {uploadingAvatar && (
-                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <div className="absolute inset-0 dark:bg-black/50 rounded-full flex items-center justify-center">
                     <Loader2 className="text-white text-2xl animate-spin" />
                   </div>
                 )}
@@ -729,18 +729,18 @@ const Profile = () => {
           </div>
 
           <div className="flex-1 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+            <div className="flex flex-col gap-4 mb-4">
               <h1 className="text-2xl md:text-3xl font-light">
                 {data?.userName || "User"}
               </h1>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                  className="px-4 py-2 dark:bg-gray-800 dark:hover:bg-gray-700 bg-gray-50 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
                 >
                   <FaEdit /> Edit Profile
                 </button>
-                <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                <button className="px-4 py-2 dark:bg-gray-800 dark:hover:bg-gray-700 bg-gray-50 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
                   <FaArchive /> View Archive
                 </button>
               </div>
