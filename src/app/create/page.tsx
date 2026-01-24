@@ -2,11 +2,10 @@
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { Upload } from 'antd';
-import Image from 'next/image';
 import createimage from '@/public/createimage.png';  
 import { addImage } from '@/src/lib/features/CreatePost/postSlice';
-import { store } from '@/src/lib/store';
-import { X } from 'lucide-react';
+import { SquarePlay, X } from 'lucide-react';
+import { Image ,PlaySquare} from 'lucide-react';
 
 export default function CreatePage() {
   const dispatch = useDispatch();
@@ -15,57 +14,61 @@ export default function CreatePage() {
   const handleSelect = (info: any) => {
     const file = info.file.originFileObj || info.file;
     if (file) {
-      if (!window.originalFiles) window.originalFiles = [];
-      window.originalFiles = [file];
-      const imageUrl = URL.createObjectURL(file);
-      dispatch(addImage(imageUrl));
-      console.log('post slice after addImage:', store.getState().post);
-      router.push('/create/obrezka');
+      const reader = new FileReader();
+      
+       reader.readAsDataURL(file);
+      
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        
+         dispatch(addImage(base64String));
+        
+         router.push('/create/obrezka');
+      };
     }
   };
-
+  
   return (
-     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      
-       <button 
+    <div className="fixed inset-0 bg-gray-100/3 flex items-center justify-center z-50 p-4 backdrop-blur-xs">
+      <button 
         onClick={() => router.push('/home')} 
         className="absolute top-5 right-5 text-white hover:text-gray-300 transition-colors"
       >
         <X size={32} strokeWidth={1.5} />
       </button>
 
-       <div className="bg-white w-full max-w-[580px] h-[580px] rounded-xl overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-        
-         <div className="h-[43px] border-b border-[#dbdbdb] flex items-center justify-center shrink-0">
-          <h1 className="text-[16px] font-semibold text-[#262626]">Создание публикации</h1>
+      <div className="w-full max-w-[580px] h-[580px] rounded-xl border-2 overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="h-[43px] border-b flex items-center justify-center shrink-0">
+          <h1 className="text-[16px] font-semibold">Create New Post</h1>
         </div>
 
-         <div className="flex-1 flex flex-col items-center justify-center px-12">
-           <div className="mb-4">
-            <Image 
-              src={createimage} 
-              alt="Upload placeholder" 
-              className="w-[96px] h-auto select-none"
-              priority
-            />
+        <div className="flex-1 flex flex-col items-center justify-center px-12">
+          <div className="mb-4 flex">
+            <div className="relative w-10 h-10">
+              <Image 
+                className="absolute bottom-0 right-0 rounded-sm" 
+                size={94} 
+              />
+              <PlaySquare 
+                className="absolute -mt-7 -left-2" 
+                size={94} 
+              />
+            </div>
           </div>
 
-           <h2 className="text-[20px] font-normal text-[#262626] mb-6">
-            Перетащите сюда фото и видео
-          </h2>
+          <h2 className="text-[20px] font-normal mt-10 mb-6">Drag photos and videos here</h2>
 
-           <Upload 
+          <Upload 
             showUploadList={false} 
             beforeUpload={() => false} 
             onChange={handleSelect}
-            className="w-auto"
+            accept="image/*,video/*"
           >
-            <button className="bg-[#0095f6] hover:bg-[#1877f2] text-white text-[14px] font-semibold py-[7px] px-4 rounded-lg transition-colors active:opacity-80">
-              Выбрать на компьютере
+            <button className="bg-[#0095f6] hover:bg-[#1877f2] text-white text-[14px] font-semibold py-[7px] px-4 rounded-lg">
+              Select from computer
             </button>
           </Upload>
         </div>
-
       </div>
     </div>
   );
