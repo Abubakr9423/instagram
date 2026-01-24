@@ -28,7 +28,7 @@ export default function CreatePage() {
      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       
        <button 
-        onClick={() => router.push('/')} 
+        onClick={() => router.push('/home')} 
         className="absolute top-5 right-5 text-white hover:text-gray-300 transition-colors"
       >
         <X size={32} strokeWidth={1.5} />
