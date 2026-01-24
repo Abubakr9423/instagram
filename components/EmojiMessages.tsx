@@ -6,7 +6,6 @@ import { useState } from 'react';
 
 const Picker = dynamic(() => import('emoji-picker-react'), { ssr: false });
 
-// Мо ба ин ҷо функсияи onEmojiSelect-ро аз волидайн мефиристем
 export default function ChatInput({ onEmojiSelect }) {
   const [showPicker, setShowPicker] = useState(false);
 
